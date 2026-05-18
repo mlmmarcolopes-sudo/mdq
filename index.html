@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Questões - Sistema Premium</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+window.MathJax = {
+    tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        processEnvironments: true
+    },
+    options: {
+        // Ignora elementos HTML como <br> se eles aparecerem no meio de uma fórmula de uma linha só
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    startup: {
+        pageReady: () => {
+            return MathJax.startup.defaultPageReady();
+        }
+    }
+};
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --sidebar-bg: #111c2e;
+            --sidebar-hover: #1a2942;
+            --sidebar-active: #1d4ed8;
+            --main-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #f8fafc;
+            --border-color: #e2e8f0;
+            
+            --btn-blue: #0284c7;
+            --btn-orange: #ea580c;
+            --btn-red: #dc2626;
+            --btn-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            background-color: var(--main-bg);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            padding: 0 20px 20px 20px;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #243754;
+        }
+
+        .user-panel {
+            background-color: #0b1320;
+            padding: 15px;
+            margin: 15px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .user-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .user-stats {
+            color: #94a3b8;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            flex-grow: 1;
+            margin-top: 10px;
+        }
+
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            transition: background 0.2s;
+            color: #cbd5e1;
+        }
+
+        .sidebar-item:hover {
+            background-color: var(--sidebar-hover);
+            color: #fff;
+        }
+
+        .sidebar-item.active {
+            background-color: var(--sidebar-active);
+            color: #fff;
+            border-left: 4px solid #60a5fa;
+        }
+
+        .sidebar-footer {
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-sidebar-action {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-sidebar-action:hover { opacity: 0.9; }
+        .btn-export { background-color: var(--btn-blue); }
+        .btn-import { background-color: var(--btn-orange); }
+        .btn-reset { background-color: var(--btn-red); }
+
+        /* --- MAIN CONTENT CONTAINER --- */
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 40px;
+            height: 100%;
+        }
+
+        .view-panel {
+            display: none;
+        }
+
+        .view-panel.active {
+            display: block;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 25px;
+            color: #0f172a;
+        }
+
+        /* --- FORMULÁRIOS E INPUTS --- */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        input, select, textarea {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            background-color: #fff;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        /* --- MODO INTELIGENTE BOX --- */
+        .intelligent-box {
+            border: 2px dashed #cbd5e1;
+            background-color: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .intelligent-box-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .intelligent-box p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .intelligent-box textarea {
+            width: 100%;
+            height: 80px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .btn-process {
+            margin-top: 10px;
+            background-color: #1e293b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background-color: var(--btn-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* --- CARD DE QUESTÃO (RESOLUÇÃO) --- */
+        
+        .question-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .question-header {
+            font-size: 13px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .question-header strong {
+            color: #334155;
+        }
+
+        .question-text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-line;
+        }
+
+        .question-text img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .alternatives-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alternative-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .alternative-item:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .alternative-item.selected {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+        }
+
+        .alternative-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 13px;
+            background-color: #fff;
+            flex-shrink: 0;
+        }
+
+        .alternative-item.selected .alternative-badge {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .alternative-text {
+            font-size: 14px;
+        }
+
+        .question-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        .btn-action-left button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-action-left button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .btn-action-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-tab {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #475569;
+        }
+
+        .btn-tab:hover { background-color: #f1f5f9; }
+
+        .explanation-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        /* --- DASHBOARD E CARDS --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        /* --- BUSCA E LISTAS --- */
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex-grow: 1;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        .feedback-correct {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+        }
+
+        .feedback-wrong {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+        }
+
+        /* ==========================================
+   --- CONFIGURAÇÃO PARA CELULARES (MOBILE) ---
+   ========================================== */
+@media (max-width: 768px) {
+    /* 1. Ajusta o container principal para não vazar nas bordas */
+    body {
+        padding: 10px !important;
+        font-size: 14px !important; /* Diminui um pouquinho a fonte geral */
+    }
+
+    .container, .main-content, main {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 10px !important;
+        margin: 0 auto !important;
+        box-sizing: border-box;
+    }
+
+    /* 2. Ajusta o card de questões para abraçar a tela do celular */
+    .question-card {
+        width: 100% !important;
+        margin: 10px 0 !important;
+        padding: 15px !important;
+        box-sizing: border-box;
+    }
+
+    /* 3. Faz os botões de ação (Editar, Excluir, Comentário) se ajustarem */
+    .question-actions {
+        display: flex !important;
+        flex-direction: column !important; /* Empilha os botões um embaixo do outro */
+        gap: 8px !important;
+    }
+
+    .btn-action-left, .btn-action-right {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    .question-actions button, .btn-tab {
+        width: 100% !important; /* Botões ocupam a largura total para ficar fácil de clicar com o polegar */
+        margin: 0 !important;
+        padding: 12px !important; /* Botão mais gordinho para o clique touch */
+    }
+
+    /* 4. Ajusta as alternativas (Boxes das letras A, B, C, D) */
+    .alternative-item {
+        padding: 12px 10px !important;
+        margin-bottom: 8px !important;
+    }
+    
+    /* 5. Se o seu menu/abas topo for horizontal, isso faz ele virar uma lista vertical */
+    .nav-tabs, .menu-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 5px !important;
+    }
+    
+    /* 6. Inputs e campos de busca ocupando a tela toda */
+    input[type="text"], input[type="number"], select {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div>
+            <div class="sidebar-brand">🗺️ Mapa de Questões</div>
+            
+            <div class="user-panel">
+                <div class="user-name" id="sb-username">Visitante</div>
+                <div class="user-stats" id="sb-performance">Desempenho: 0 AC / 0 ER</div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-item active" onclick="switchView('dashboard')">📊 Dashboard</li>
+                <li class="sidebar-item" onclick="switchView('todas')">📚 Todas as Questões</li>
+                <li class="sidebar-item" onclick="switchView('filtros')">🔍 Navegar por Filtros</li>
+                <li class="sidebar-item" onclick="switchView('encontrar')">🔎 Encontrar Questão</li>
+                <li class="sidebar-item" onclick="switchView('grafico')">📈 Ver Meu Gráfico</li>
+                <li class="sidebar-item" onclick="switchView('enviar')">➕ Enviar Questões</li>
+                <li class="sidebar-item" onclick="switchView('usuario')">👤 Cadastrar Usuário</li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="btn-sidebar-action btn-export" onclick="exportDatabase()">Exportar Banco</button>
+            <button class="btn-sidebar-action btn-import" onclick="triggerImport()">Importar Banco</button>
+            <button class="btn-sidebar-action btn-reset" onclick="resetHistory()">Zerar Histórico</button>
+            <input type="file" id="import-file" style="display: none;" onchange="importDatabase(event)">
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        <div id="view-dashboard" class="view-panel active">
+            <h2>Dashboard de Desempenho</h2>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total de Questões no Banco</div>
+                    <div class="stat-value" id="dash-total-q">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Questões Respondidas</div>
+                    <div class="stat-value" id="dash-total-resp">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Taxa de Acerto</div>
+                    <div class="stat-value" id="dash-taxa-acerto">0%</div>
+                </div>
+            </div>
+            <div class="stat-card" style="margin-top: 20px;">
+                <h3>Bem-vindo ao seu ambiente de simulados!</h3>
+                <p style="margin-top: 10px; color: var(--text-muted); line-height: 1.5;">
+                    Utilize o menu lateral para gerenciar suas questões, filtrar por assuntos específicos ou realizar cadastros em massa usando a ferramenta inteligente de captura HTML.
+                </p>
+            </div>
+        </div>
+
+        <div id="view-todas" class="view-panel">
+            <h2>Todas as Questões</h2>
+            <div id="container-todas-questoes"></div>
+        </div>
+
+        <div id="view-filtros" class="view-panel">
+            <h2>Navegar por Filtros</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Banca</label>
+                    <select id="filter-banca" onchange="applyFilters()"><option value="">Todas</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Matéria</label>
+                    <select id="filter-materia" onchange="applyFilters()"><option value="">Todas</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Assunto</label>
+                    <select id="filter-assunto" onchange="applyFilters()"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div id="container-filtros-questoes" style="margin-top: 20px;"></div>
+        </div>
+
+        <div id="view-encontrar" class="view-panel">
+            <h2>Encontrar Questão por ID</h2>
+            <div class="search-container">
+                <input type="text" id="search-query" class="search-input" placeholder="Digite o ID da questão desejada." oninput="searchQuestions()">
+            </div>
+            <div id="container-busca-questoes"></div>
+        </div>
+
+        <div id="view-grafico" class="view-panel">
+            <h2>Estatísticas de Aproveitamento</h2>
+            <div class="stat-card" style="max-width: 600px; margin: 0 auto;">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <div id="view-enviar" class="view-panel">
+            <h2>Enviar Nova Questão</h2>
+            
+            <div class="intelligent-box">
+                <div class="intelligent-box-title">⚡ Modo Inteligente: Auto-Cadastro por HTML</div>
+                <p>Cole o código HTML da sua plataforma de questões abaixo. O sistema extrairá de forma limpa!</p>
+                <textarea id="html-pasted" placeholder="Cole a estrutura HTML da questão aqui..."></textarea>
+                <button type="button" class="btn-process" onclick="processPastedHTML()">Processar HTML</button>
+            </div>
+
+            <form id="form-nova-questao" onsubmit="saveQuestion(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Banca Examinadora</label>
+                        <input type="text" id="inp-banca" required placeholder="Ex: VUNESP">
+                    </div>
+                    <div class="form-group">
+                        <label>Órgão</label>
+                        <input type="text" id="inp-orgao" placeholder="Ex: Pref. Santos / SP">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cargo(s)</label>
+                        <input type="text" id="inp-cargo" placeholder="Ex: Técnico de Administração">
+                    </div>
+                    <div class="form-group">
+                        <label>Ano</label>
+                        <input type="number" id="inp-ano" required placeholder="Ex: 2026">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Matéria</label>
+                        <input type="text" id="inp-materia" required placeholder="Ex: Matemática">
+                    </div>
+                    <div class="form-group">
+                        <label>Assunto</label>
+                        <input type="text" id="inp-assunto" placeholder="Ex: Proporcionalidade / Regra de Três">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantidade de Alternativas</label>
+                        <select id="inp-qtd-alternativas" onchange="adjustAlternativeInputs()">
+                            <option value="5">5 (A até E)</option>
+                            <option value="4">4 (A até D)</option>
+                            <option value="3">3 (A até C)</option>
+                            <option value="2">2 (A até B)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="gap: 10px; margin-bottom: 15px;">
+                    <label>Alternativas</label>
+                    <div style="display:flex; align-items:center; gap:10px;"><strong>A</strong> <input type="text" id="inp-altA" style="flex:1;" required></div>
+                    <div style="display:flex; align-items:center; gap:10px;"><strong>B</strong> <input type="text" id="inp-altB" style="flex:1;" required></div>
+                    <div style="display:flex; align-items:center; gap:10px;" id="box-altC"><strong>C</strong> <input type="text" id="inp-altC" style="flex:1;" required></div>
+                    <div style="display:flex; align-items:center; gap:10px;" id="box-altD"><strong>D</strong> <input type="text" id="inp-altD" style="flex:1;" required></div>
+                    <div style="display:flex; align-items:center; gap:10px;" id="box-altE"><strong>E</strong> <input type="text" id="inp-altE" style="flex:1;" required></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Alternativa Correta</label>
+                        <select id="inp-correta" required>
+                            <option value="">Selecione...</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C" id="opt-corretaC">C</option>
+                            <option value="D" id="opt-corretaD">D</option>
+                            <option value="E" id="opt-corretaE">E</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Comentários / Explicação</label>
+                    <textarea id="inp-comentario" rows="4" placeholder="Insira o gabarito comentado ou resolução passo a passo... Aceita fórmulas matemáticas."></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Enunciado da Questão</label>
+                    <textarea id="inp-enunciado" rows="6" placeholder="O enunciado extraído ou digitado aparecerá aqui..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btn-submit-questao">Cadastrar Questão</button>
+            </form>
+        </div>
+
+        <div id="view-usuario" class="view-panel">
+            <h2>Configurações do Usuário</h2>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px; max-width: 500px; width: 100%;">
+                
+                <div class="stat-card">
+                    <div class="form-group">
+                        <label>Alterar Nome do Perfil Ativo</label>
+                        <input type="text" id="inp-username-config" value="Marco Lopes">
+                        <button class="btn-submit" style="width: fit-content;" onclick="updateUsername()">Salvar Nome</button>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="form-group">
+                        <label>Cadastrar Novo Perfil</label>
+                        <input type="text" id="new-user-name-input" placeholder="Ex: Pedro Silva, Maria Souza...">
+                        <button class="btn-submit" style="width: fit-content; background-color: #3498db;" onclick="triggerUserCreation()">+ Criar Perfil</button>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="form-group">
+                        <label>Trocar de Usuário Ativo</label>
+                        <select id="user-profile-selector" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; margin-bottom: 10px; font-size: 14px;">
+                            </select>
+                        <button class="btn-submit" style="width: fit-content; background-color: #f39c12;" onclick="triggerUserSwitch()">Confirmar Troca</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    <script>     
+// ==========================================
+// --- MOTOR DE PROCESSAMENTO DE MARKDOWN E HTML ---
+// ==========================================
+function parseMarkdown(text) {
+    if (!text) return "";
+    
+    // 1. REVERTER O ESCAPE (Aceita suas tags HTML como <strong style="color:blue">)
+    let decodedText = text
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&");
+
+    // 2. SUPORTE A TÍTULOS DE IA (### Qualquer Texto)
+    decodedText = decodedText.replace(/###\s*([^<\n\r]+)/g, function(match, titleContent) {
+        return `<h3 style="margin-top:14px; margin-bottom:4px; font-size:15px; font-weight:700; color:#111c2e; display:block;">${titleContent.trim()}</h3>`;
+    });
+
+    // 3. PROCESSAR SINTAXE DE NEGRITO DE IA (**texto**)
+    decodedText = decodedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // 4. PROCESSAR QUEBRAS DE LINHA (\n vira <br>)
+    // Usamos uma classe temporária para que o MathJax saiba o que ignorar se necessário
+    decodedText = decodedText.replace(/\n/g, '<br>');
+
+    // 5. SUPORTE A LISTAS DE MARKDOWN (- Item ou * Item)
+    decodedText = decodedText.replace(/^[\*|-]\s(.*$)/gim, '<li>$1</li>');
+
+    // 6. LIMPEZA DE ACABAMENTO VISUAL
+    decodedText = decodedText.replace(/<\/h3><br>/g, '</h3>');
+    decodedText = decodedText.replace(/<br><h3/g, '<h3');
+
+    return decodedText;
+}
+
+function parseMarkdownLocal(text) {
+    return parseMarkdown(text);
+}
+
+// Banco de Dados em LocalStorage
+let db = JSON.parse(localStorage.getItem('mapa_questoes_db')) || {
+    users: [], // Começa com a lista de usuários vazia se for a primeira vez na vida
+    questions: []
+};
+
+// 🔥 AUTOMAÇÃO DE IDS: Garante que cada questão tenha um ID numérico fixo
+if (db && db.questions && Array.isArray(db.questions)) {
+    let alterouBanco = false;
+
+    db.questions.forEach((quest, index) => {
+        // Se a questão não tiver ID ou o ID não for um número válido, cadastra o sequencial (1, 2, 3...)
+        if (quest.id === undefined || quest.id === null || isNaN(quest.id)) {
+            quest.id = index + 1;
+            alterouBanco = true; // Avisa que precisamos salvar a correção
+        }
+    });
+
+    // Se o script precisou gerar algum ID que estava faltando, salva no LocalStorage para eternizar
+    if (alterouBanco) {
+        localStorage.setItem('mapa_questoes_db', JSON.stringify(db));
+    }
+}
+
+        // --- SISTEMA MULTI-USUÁRIO (MIGRAÇÃO E INICIALIZAÇÃO) ---
+        if (!db.users || db.users.length === 0) {
+            // Cria o primeiro usuário no formato novo
+            db.users = [{
+                id: "user-1",
+                name: "Visitante",
+                acertos: 0,
+                erros: 0,
+                respondidas: []
+            }];
+            // Define ele como o usuário ativo
+            db.user = db.users[0];
+            localStorage.setItem('mapa_questoes_db', JSON.stringify(db));
+        }
+
+        // Garante que o usuário ativo (db.user) aponte para um usuário válido da lista
+        if (!db.user || !db.user.id) {
+            db.user = db.users[0];
+        }
+
+        // Garante que todos os usuários tenham a lista de respondidas criada ao carregar a página
+        db.users.forEach(u => {
+            if (!u.respondidas) u.respondidas = [];
+        });
+        // ---------------------------------------------------------
+
+        let currentSelections = {}; 
+        let myChart = null;
+        let editingId = null;
+
+        // Inicialização do sistema
+        document.addEventListener("DOMContentLoaded", () => {
+            updateUIElements();
+            populateFilterDropdowns();
+        });
+
+      function saveToStorage() {
+    // Sincroniza os dados do usuário atual dentro da lista de usuários
+    if (db.users && db.user) {
+        const index = db.users.findIndex(u => u.id === db.user.id);
+        if (index !== -1) {
+            db.users[index] = db.user;
+        }
+    }
+    
+    // Salva o banco completo no LocalStorage
+    localStorage.setItem('mapa_questoes_db', JSON.stringify(db));
+    
+    // --- FORÇAR ATUALIZAÇÃO VISUAL DO PLACAR ---
+    // Varre todas as possíveis funções do seu simulado para atualizar os números na tela na hora
+    if (typeof updateUIElements === "function") updateUIElements();
+    if (typeof updateDashboard === "function") updateDashboard();
+    if (typeof renderStats === "function") renderStats();
+    if (typeof updateStats === "function") updateStats();
+    if (typeof atualizarPlacar === "function") atualizarPlacar();
+    if (typeof loadStats === "function") loadStats();
+    if (typeof initStats === "function") initStats();
+    if (typeof checkUserStats === "function") checkUserStats();
+}
+
+        function updateUIElements() {
+            // 1. Atualiza os elementos da Sidebar
+            const sbUsername = document.getElementById('sb-username');
+            const inpUsername = document.getElementById('inp-username-config');
+            const sbPerformance = document.getElementById('sb-performance');
+
+            if (sbUsername && db.user) sbUsername.textContent = db.user.name;
+            if (inpUsername && db.user) inpUsername.value = db.user.name;
+            if (sbPerformance && db.user) {
+                sbPerformance.textContent = `Desempenho: ${db.user.acertos} AC / ${db.user.erros} ER`;
+            }
+
+            // 2. Preenche o seletor de perfis com a lista de usuários
+            const selector = document.getElementById('user-profile-selector');
+            if (selector && db.users) {
+                selector.innerHTML = '';
+                db.users.forEach(u => {
+                    const option = document.createElement('option');
+                    option.value = u.id;
+                    option.textContent = `${u.name} (Acertos: ${u.acertos} | Erros: ${u.erros})`;
+                    if (u.id === db.user.id) {
+                        option.selected = true;
+                    }
+                    selector.appendChild(option);
+                });
+            }
+
+            // 3. Atualiza os dados do Dashboard (Garante que os números mudem na tela)
+            const dashTotalQ = document.getElementById('dash-total-q');
+            const dashTotalResp = document.getElementById('dash-total-resp');
+            const dashTaxaAcerto = document.getElementById('dash-taxa-acerto');
+
+            if (dashTotalQ && db.questions) {
+                dashTotalQ.textContent = db.questions.length;
+            }
+
+            if (db.user) {
+                const totalResp = db.user.acertos + db.user.erros;
+                if (dashTotalResp) dashTotalResp.textContent = totalResp;
+
+                const taxa = totalResp > 0 ? Math.round((db.user.acertos / totalResp) * 100) : 0;
+                if (dashTaxaAcerto) dashTaxaAcerto.textContent = `${taxa}%`;
+            }
+        }
+
+function updateUsername() {
+            const input = document.getElementById('inp-username-config');
+            if (input && input.value.trim() !== "") {
+                db.user.name = input.value.trim();
+                saveToStorage();
+                alert("Nome do perfil atualizado com sucesso!");
+                location.reload(); 
+            }
+        }
+
+        function triggerUserCreation() {
+            const input = document.getElementById('new-user-name-input');
+            if (input && input.value.trim() !== "") {
+                createNewUser(input.value.trim());
+                input.value = '';
+                updateUIElements();
+            } else {
+                alert("Por favor, digite um nome válido.");
+            }
+        }
+
+        function triggerUserSwitch() {
+            const selector = document.getElementById('user-profile-selector');
+            if (selector) {
+                const selectedId = selector.value;
+                changeActiveUser(selectedId);
+            }
+        }
+
+        // --- SISTEMA DE ABAS (VIEWS) ---
+        function switchView(viewName, isEditingTrigger = false) {
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            
+            const items = Array.from(document.querySelectorAll('.sidebar-item'));
+            const target = items.find(i => i.textContent.toLowerCase().includes(viewName.substring(0, 4)));
+            if (target) target.classList.add('active');
+
+            if (viewName === 'todas') renderQuestionsList(db.questions, 'container-todas-questoes');
+            if (viewName === 'filtros') { populateFilterDropdowns(); applyFilters(); }
+            if (viewName === 'grafico') renderChart();
+            
+            if (viewName === 'enviar' && !isEditingTrigger) {
+                editingId = null;
+                document.getElementById('form-nova-questao').reset();
+                document.getElementById('btn-submit-questao').textContent = "Cadastrar Questão";
+                adjustAlternativeInputs();
+            }
+        }
+
+        function adjustAlternativeInputs() {
+            const qtd = document.getElementById('inp-qtd-alternativas').value;
+            
+            const boxC = document.getElementById('box-altC');
+            const boxD = document.getElementById('box-altD');
+            const boxE = document.getElementById('box-altE');
+            
+            const optC = document.getElementById('opt-corretaC');
+            const optD = document.getElementById('opt-corretaD');
+            const optE = document.getElementById('opt-corretaE');
+            
+            boxC.style.display = "flex"; document.getElementById('inp-altC').required = true; optC.style.display = "block";
+            boxD.style.display = "flex"; document.getElementById('inp-altD').required = true; optD.style.display = "block";
+            boxE.style.display = "flex"; document.getElementById('inp-altE').required = true; optE.style.display = "block";
+            
+            if (qtd === "4") {
+                boxE.style.display = "none"; document.getElementById('inp-altE').required = false; optE.style.display = "none";
+            } else if (qtd === "3") {
+                boxD.style.display = "none"; document.getElementById('inp-altD').required = false; optD.style.display = "none";
+                boxE.style.display = "none"; document.getElementById('inp-altE').required = false; optE.style.display = "none";
+            } else if (qtd === "2") {
+                boxC.style.display = "none"; document.getElementById('inp-altC').required = false; optC.style.display = "none";
+                boxD.style.display = "none"; document.getElementById('inp-altD').required = false; optD.style.display = "none";
+                boxE.style.display = "none"; document.getElementById('inp-altE').required = false; optE.style.display = "none";
+            }
+        }
+
+        // --- PARSER DO MODO INTELIGENTE ---
+        function processPastedHTML() {
+            const htmlContent = document.getElementById('html-pasted').value.trim();
+            if (!htmlContent) return alert("Por favor, cole um fragmento de código HTML válido.");
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+
+            let banca = "", orgao = "", cargo = "", ano = "", materia = "", assunto = "";
+            const headerParagraphs = doc.querySelectorAll('[class*="header"] p');
+            
+            if (headerParagraphs.length > 0) {
+                headerParagraphs.forEach(p => {
+                    const strong = p.querySelector('strong');
+                    if (strong) {
+                        const label = strong.textContent.trim().toLowerCase();
+                        let value = p.textContent.replace(strong.textContent, '').trim();
+                        
+                        if (label.includes('banca')) banca = value;
+                        else if (label.includes('orgão') || label.includes('órgão')) orgao = value;
+                        else if (label.includes('cargo')) cargo = value;
+                        else if (label.includes('ano')) ano = value;
+                        else if (label.includes('materia') || label.includes('matéria')) {
+                            const partes = value.split('>');
+                            if (partes.length > 0) materia = partes[0].trim();
+                            if (partes.length > 1) assunto = partes.slice(1).join('>').trim();
+                        }
+                    }
+                });
+            }
+
+            const enunciadoEl = doc.querySelector('[class*="chamada"], .ft-size14');
+            let enunciado = "";
+            if (enunciadoEl) {
+                // CORREÇÃO VISADA: Preserva quebras de linha e faz uma whitelist de tags de formatação úteis (b, strong, i, u, em, img, p)
+                // Remove apenas scripts, estilos ou tags estruturais complexas injetadas por plataformas externas
+                const allowedTags = ['b', 'strong', 'i', 'u', 'em', 'img', 'p', 'br'];
+                
+                // Transforma quebras de linha <br> em caracteres reais antes de limpar o resto
+                enunciado = enunciadoEl.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+                
+                // Executa a remoção seletiva usando um elemento temporário para garantir estabilidade no DOM sem Regex agressivo
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = enunciado;
+                const allElements = tempDiv.getElementsByTagName('*');
+                
+                for (let i = allElements.length - 1; i >= 0; i--) {
+                    const el = allElements[i];
+                    if (!allowedTags.includes(el.tagName.toLowerCase())) {
+                        // Se a tag não for permitida, mantém o texto de dentro e deleta a tag estrutural externa (Ex: <span> ou <div>)
+                        while (el.firstChild) {
+                            el.parentNode.insertBefore(el.firstChild, el);
+                        }
+                        el.parentNode.removeChild(el);
+                    } else {
+                        // Se for uma tag permitida (ex: <img> ou <b>), remove atributos pesados de estilização/classes pra limpar o código
+                        if (el.tagName.toLowerCase() !== 'img') {
+                            while (el.attributes.length > 0) el.removeAttribute(el.attributes[0].name);
+                        }
+                    }
+                }
+                enunciado = tempDiv.innerHTML.trim();
+            }
+
+            let alternativas = { A: "", B: "", C: "", D: "", E: "" };
+            const altBlocks = doc.querySelectorAll('[class*="alternativaItem"]');
+            
+            altBlocks.forEach(block => {
+                const buttonSelector = block.querySelector('[class*="alternativaSelecionar"]');
+                const textSelector = block.querySelector('[class*="alternativaTexto"]');
+                if (buttonSelector && textSelector) {
+                    const letra = buttonSelector.textContent.trim().toUpperCase();
+                    if (alternativas.hasOwnProperty(letra)) {
+                        alternativas[letra] = textSelector.textContent.trim();
+                    }
+                }
+            });
+
+            document.getElementById('inp-banca').value = banca;
+            document.getElementById('inp-orgao').value = orgao;
+            document.getElementById('inp-cargo').value = cargo;
+            document.getElementById('inp-ano').value = ano;
+            document.getElementById('inp-materia').value = materia;
+            document.getElementById('inp-assunto').value = assunto;
+            document.getElementById('inp-enunciado').value = enunciado;
+            
+            if (alternativas.A) document.getElementById('inp-altA').value = alternativas.A;
+            if (alternativas.B) document.getElementById('inp-altB').value = alternativas.B;
+            if (alternativas.C) document.getElementById('inp-altC').value = alternativas.C;
+            if (alternativas.D) document.getElementById('inp-altD').value = alternativas.D;
+            
+            if (alternativas.E) {
+                document.getElementById('inp-altE').value = alternativas.E;
+                document.getElementById('inp-qtd-alternativas').value = "5";
+            } else if (alternativas.D) {
+                document.getElementById('inp-qtd-alternativas').value = "4";
+            } else if (alternativas.C) {
+                document.getElementById('inp-qtd-alternativas').value = "3";
+            } else if (alternativas.B) {
+                document.getElementById('inp-qtd-alternativas').value = "2";
+            }
+            
+            adjustAlternativeInputs();
+            alert("Metadados estruturados e formatações mantidas no formulário com sucesso!");
+        }
+
+// ==========================================
+// --- SALVAR QUESTÃO (CADASTRO / EDIÇÃO) ---
+// ==========================================
+function saveQuestion(e) {
+    e.preventDefault();
+    
+    const qtd = document.getElementById('inp-qtd-alternativas').value;
+    const alts = {
+        A: document.getElementById('inp-altA').value,
+        B: document.getElementById('inp-altB').value
+    };
+    if (parseInt(qtd) >= 3) alts.C = document.getElementById('inp-altC').value;
+    if (parseInt(qtd) >= 4) alts.D = document.getElementById('inp-altD').value;
+    if (parseInt(qtd) >= 5) alts.E = document.getElementById('inp-altE').value;
+
+    const comentarioRaw = document.getElementById('inp-comentario').value;
+
+    const newQ = {
+        id: typeof editingId !== 'undefined' && editingId ? editingId : Date.now(),
+        banca: document.getElementById('inp-banca').value.trim(),
+        orgao: document.getElementById('inp-orgao').value.trim(),
+        cargo: document.getElementById('inp-cargo').value.trim(),
+        ano: document.getElementById('inp-ano').value.trim(),
+        materia: document.getElementById('inp-materia').value.trim(),
+        assunto: document.getElementById('inp-assunto').value.trim(),
+        enunciado: document.getElementById('inp-enunciado').value.trim(),
+        alternativas: alts,
+        correta: document.getElementById('inp-correta').value,
+        comentario: comentarioRaw
+    };
+
+    if (typeof editingId !== 'undefined' && editingId) {
+        const index = db.questions.findIndex(q => q.id === editingId);
+        if (index !== -1) db.questions[index] = newQ;
+        editingId = null;
+        document.getElementById('btn-submit-questao').textContent = "Cadastrar Questão";
+        alert("Questão updated com sucesso!");
+    } else {
+        db.questions.push(newQ);
+        alert("Questão adicionada ao seu banco local com sucesso!");
+    }
+
+    saveToStorage();
+    document.getElementById('form-nova-questao').reset();
+    document.getElementById('html-pasted').value = "";
+    switchView('dashboard');
+}
+
+// --- RENDERIZAÇÃO DOS SIMULADOS ---
+function renderQuestionsList(list, containerId) {
+    const container = document.getElementById(containerId);
+    if (list.length === 0) {
+        container.innerHTML = `<p class="placeholder-text">Nenhuma questão encontrada nesta seção.</p>`;
+        return;
+    }
+
+    container.innerHTML = "";
+    list.forEach(q => {
+        const card = document.createElement('div');
+        card.className = "question-card";
+        card.id = `card-q-${q.id}`;
+
+        let altsHTML = "";
+        Object.keys(q.alternativas).forEach(letter => {
+            altsHTML += `
+                <div class="alternative-item" id="alt-box-${q.id}-${letter}" onclick="selectAlternative(${q.id}, '${letter}')">
+                    <div class="alternative-badge">${letter}</div>
+                    <div class="alternative-text">${escapeHtml(q.alternativas[letter])}</div>
+                </div>
+            `;
+        });
+
+        card.innerHTML = `
+            <div class="question-header">
+                <span style="background: #e2e8f0; color: #334155; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-right: 5px; font-size: 12px;">ID: ${q.id}</span>
+                <strong>Banca:</strong> ${q.banca} | <strong>Órgão:</strong> ${q.orgao || 'N/A'} | 
+                <strong>Cargo:</strong> ${q.cargo || 'N/A'} | <strong>Ano:</strong> ${q.ano}<br>
+                <strong>Matéria:</strong> ${q.materia} > ${q.assunto || 'Geral'}
+            </div>
+            <div class="question-text">${q.enunciado}</div>
+            <div class="alternatives-list">${altsHTML}</div>
+            
+            <div id="feedback-main-${q.id}" class="feedback-box" style="display:none; margin: 15px 0; padding: 12px; border-radius: 6px; font-weight: 600; font-size: 15px;"></div>
+
+            <div class="question-actions">
+                <div class="btn-action-left">
+                    <button id="btn-resolve-${q.id}" onclick="verifyAnswer(${q.id}, '${q.correta}')">Resolver Questão</button>
+                </div>
+                <div class="btn-action-right">
+                    <button class="btn-tab" onclick="toggleExplanation(${q.id})">💡 Comentário Professor</button>
+                    <button class="btn-tab" style="color: var(--btn-blue);" onclick="editQuestion(${q.id})">✏️ Editar</button>
+                    <button class="btn-tab" style="color: var(--btn-red);" onclick="deleteQuestion(${q.id})">❌ Excluir</button>
+                </div>
+            </div>
+            
+            <div class="explanation-box" id="explanation-${q.id}" style="display:none; margin-top:15px; padding:15px; background:#f8fafc; border-left:4px solid #0284c7; border-radius:4px;">                
+                <div class="markdown-body">${parseMarkdown(q.comentario) || "Sem comentários cadastrados para esta questão."}</div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    if (window.MathJax && window.MathJax.typeset) {
+        MathJax.typeset();
+    }
+}
+
+        function selectAlternative(qId, letter) {
+            const currentCard = document.getElementById(`card-q-${qId}`);
+            currentCard.querySelectorAll('.alternative-item').forEach(item => item.classList.remove('selected'));
+            
+            document.getElementById(`alt-box-${qId}-${letter}`).classList.add('selected');
+            currentSelections[qId] = letter;
+        }
+
+// ==========================================
+// --- VERIFICAÇÃO UNIFICADA: TODAS AS QUESTÕES ---
+// ==========================================
+// ==========================================
+// --- VERIFICAÇÃO UNIFICADA: TODAS AS QUESTÕES ---
+// ==========================================
+function verifyAnswer(questionId, gabaritoOficial) {
+    if (!questionId) {
+        console.error("Não foi possível capturar o ID da questão.");
+        return;
+    }
+    
+    const idString = String(questionId);
+    
+    // 🔥 CORREÇÃO AQUI: Transforma ambos os lados em String ou Número para garantir que se encontrem!
+    const question = db.questions.find(q => String(q.id) === idString || Number(q.id) === Number(questionId));
+    
+    if (!question) {
+        console.error("Questão não encontrada no banco de dados para o ID:", questionId);
+        return;
+    }
+
+    const corretaReal = gabaritoOficial || question.correta;
+    let userAnswer = "";
+    let selectedElement = null;
+
+    const letrasPossiveis = ['A', 'B', 'C', 'D', 'E'];
+    for (let letra of letrasPossiveis) {
+        const caixaAlt = document.getElementById(`alt-box-${idString}-${letra}`);
+        if (caixaAlt) {
+            const computedStyle = window.getComputedStyle(caixaAlt);
+            const temClasseSelected = caixaAlt.classList.contains('selected') || caixaAlt.classList.contains('active');
+            
+            if (temClasseSelected || computedStyle.borderColor === 'rgb(59, 130, 246)' || caixaAlt.getAttribute('data-selected') === 'true') {
+                userAnswer = letra;
+                selectedElement = caixaAlt;
+                break;
+            }
+        }
+    }
+
+    if (!userAnswer) {
+        alert("Por favor, selecione uma alternativa antes de responder!");
+        return;
+    }
+
+    if (!db.user) db.user = {};
+    if (!db.user.respondidas) db.user.respondidas = [];
+    if (db.user.acertos === undefined) db.user.acertos = 0;
+    if (db.user.erros === undefined) db.user.erros = 0;
+
+    const jaContabilizada = db.user.respondidas.map(id => String(id)).includes(idString);
+    
+    // Alvo do feedback dinâmico padrão corrigido
+    const feedbackDiv = document.getElementById(`feedback-main-${idString}`);
+    const btnVerificar = document.getElementById(`btn-resolve-${idString}`);
+
+    if (feedbackDiv) feedbackDiv.style.display = "block";
+
+    if (userAnswer === corretaReal) {
+        if (!jaContabilizada) {
+            db.user.acertos++;
+            db.user.respondidas.push(idString);
+        }
+        if (feedbackDiv) {
+            feedbackDiv.innerHTML = `✔ Correto! ${jaContabilizada ? '<span style="color:#64748b; font-weight:normal; font-size:12px;">(Modo Treino)</span>' : ''}`;
+            feedbackDiv.style.backgroundColor = "#f0fdf4";
+            feedbackDiv.style.color = "#15803d";
+            feedbackDiv.style.borderLeft = "4px solid #22c55e";
+        }
+        if (selectedElement) {
+            selectedElement.style.backgroundColor = '#f0fdf4';
+            selectedElement.style.borderColor = '#22c55e';
+            const badge = selectedElement.querySelector('.alternative-badge');
+            if (badge) { badge.style.backgroundColor = '#22c55e'; badge.style.color = '#fff'; }
+        }
+    } else {
+        if (!jaContabilizada) {
+            db.user.erros++;
+            db.user.respondidas.push(idString);
+        }
+        if (feedbackDiv) {
+            feedbackDiv.innerHTML = `<span style="color:#b91c1c;">❌ Incorreto.</span> Resposta gabarito: <strong>(${corretaReal})</strong>`;
+            feedbackDiv.style.backgroundColor = "#fef2f2";            
+            feedbackDiv.style.borderLeft = "4px solid #ef4444";
+            feedbackDiv.style.color = "#b91c1c"; // Garante cor legível para o texto do erro
+        }
+        
+        if (selectedElement) {
+            selectedElement.style.backgroundColor = '#fef2f2';
+            selectedElement.style.borderColor = '#ef4444';
+            const badge = selectedElement.querySelector('.alternative-badge');
+            if (badge) { badge.style.backgroundColor = '#ef4444'; badge.style.color = '#fff'; }
+        }
+        
+        // Destaca a alternativa correta em verde
+        const caixaCorreta = document.getElementById(`alt-box-${idString}-${corretaReal}`);
+        if (caixaCorreta) {
+            caixaCorreta.style.backgroundColor = '#f0fdf4';
+            caixaCorreta.style.borderColor = '#22c55e';
+            const badgeCorreta = caixaCorreta.querySelector('.alternative-badge');
+            if (badgeCorreta) { badgeCorreta.style.backgroundColor = '#22c55e'; badgeCorreta.style.color = '#fff'; }
+        }
+    }
+
+    if (btnVerificar) btnVerificar.style.display = 'none';
+    saveToStorage();
+}
+
+// --- COLAR AS NOVAS FUNÇÕES EXATAMENTE AQUI EMBAIXO ---
+        
+        function createNewUser(name) {
+            if (!name || name.trim() === "") return;
+            
+            const newUser = {
+                id: "user-" + Date.now(),
+                name: name.trim(),
+                acertos: 0,
+                erros: 0,
+                respondidas: []
+            };
+            
+            db.users.push(newUser);
+            saveToStorage();
+            alert(`Usuário "${name}" cadastrado com sucesso!`);
+        }
+
+function changeActiveUser(userId) {
+    const found = db.users.find(u => u.id === userId);
+    if (found) {
+        db.user = found; // Aponta para o usuário escolhido
+        
+        // Salva a alteração imediatamente
+        localStorage.setItem('mapa_questoes_db', JSON.stringify(db));
+        
+        alert(`Perfil alterado para: ${db.user.name}`);
+        
+        // Força a página a recarregar para desenhar a tela com os dados do novo usuário
+        location.reload(); 
+    } else {
+        alert("Usuário não encontrado!");
+    }
+}
+
+        function resetHistory() {
+            if (confirm("Atenção! Isso zerará o contador de acertos, erros e o histórico de inéditas deste perfil. Continuar?")) {
+                db.user.acertos = 0;
+                db.user.erros = 0;
+                db.user.respondidas = [];
+                saveToStorage();
+                switchView('dashboard');
+            }
+        }
+
+        function toggleExplanation(qId) {
+    const box = document.getElementById(`explanation-${qId}`);
+    if (box) {
+        if (box.style.display === "block") {
+            box.style.display = "none";
+        } else {
+            box.style.display = "block";
+            
+            // Força o MathJax a redesenhar a matemática assim que a caixa abre
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 60);
+        }
+    }
+}
+
+        // --- EDITAR QUESTÃO ---
+        function editQuestion(qId) {
+            const q = db.questions.find(quest => quest.id === qId);
+            if (!q) return;
+            
+            editingId = qId;
+            
+            document.getElementById('inp-banca').value = q.banca;
+            document.getElementById('inp-orgao').value = q.orgao || "";
+            document.getElementById('inp-cargo').value = q.cargo || "";
+            document.getElementById('inp-ano').value = q.ano;
+            document.getElementById('inp-materia').value = q.materia;
+            document.getElementById('inp-assunto').value = q.assunto || "";
+            document.getElementById('inp-enunciado').value = q.enunciado;
+            
+            const qtdAlts = Object.keys(q.alternativas).length;
+            document.getElementById('inp-qtd-alternativas').value = qtdAlts;
+            adjustAlternativeInputs();
+            
+            document.getElementById('inp-altA').value = q.alternativas.A || "";
+            document.getElementById('inp-altB').value = q.alternativas.B || "";
+            if (q.alternativas.C) document.getElementById('inp-altC').value = q.alternativas.C;
+            if (q.alternativas.D) document.getElementById('inp-altD').value = q.alternativas.D;
+            if (q.alternativas.E) document.getElementById('inp-altE').value = q.alternativas.E;
+            
+            document.getElementById('inp-correta').value = q.correta;
+            document.getElementById('inp-comentario').value = q.comentario || "";
+            
+            document.getElementById('btn-submit-questao').textContent = "Salvar Alterações (Editar)";
+            switchView('enviar', true);
+        }
+
+        function deleteQuestion(qId) {
+            if (confirm("Deseja realmente remover esta questão de forma permanente?")) {
+                db.questions = db.questions.filter(q => q.id !== qId);
+                saveToStorage();
+                switchView('dashboard');
+            }
+        }
+
+        // --- SISTEMAS DE FILTROS E BUSCAS ---
+        function populateFilterDropdowns() {
+            const bancas = new Set(), materias = new Set(), assuntos = new Set();
+            db.questions.forEach(q => {
+                if (q.banca) bancas.add(q.banca);
+                if (q.materia) materias.add(q.materia);
+                if (q.assunto) assuntos.add(q.assunto);
+            });
+
+            updateSelectOptions('filter-banca', bancas);
+            updateSelectOptions('filter-materia', materias);
+            updateSelectOptions('filter-assunto', assuntos);
+        }
+
+        function updateSelectOptions(elementId, set) {
+            const select = document.getElementById(elementId);
+            select.innerHTML = `<option value="">${elementId.includes('assunto') ? 'Todos' : 'Todas'}</option>`;
+            set.forEach(val => {
+                select.innerHTML += `<option value="${val}">${val}</option>`;
+            });
+        }
+
+// ==========================================
+// --- FILTROS DE QUESTÕES ---
+// ==========================================
+function applyFilters() {
+    const fb = document.getElementById('filter-banca') ? document.getElementById('filter-banca').value.trim() : "";
+    const fm = document.getElementById('filter-materia') ? document.getElementById('filter-materia').value.trim() : "";
+    const fa = document.getElementById('filter-assunto') ? document.getElementById('filter-assunto').value.trim() : "";
+
+    const container = document.getElementById('container-filtros-questoes');
+
+    if (!fb && !fm && !fa) {
+        if (container) container.innerHTML = "";
+        return;
+    }
+
+    const filtered = db.questions.filter(q => {
+        const normalizar = (txt) => txt ? txt.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim() : "";
+        const matchBanca = !fb || normalizar(q.banca) === normalizar(fb);
+        const matchMateria = !fm || normalizar(q.materia) === normalizar(fm);
+        const matchAssunto = !fa || normalizar(q.assunto) === normalizar(fa);
+        return matchBanca && matchMateria && matchAssunto;
+    });
+
+    renderFilterQuestionsList(filtered, 'container-filtros-questoes');
+}
+
+// ==========================================
+// --- FILTROS DE QUESTÕES (DESIGN UNIFICADO) ---
+// ==========================================
+function renderFilterQuestionsList(questions, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (!questions || questions.length === 0) {
+        container.innerHTML = "<p style='color: #7f8c8d; font-style: italic;'>Nenhuma questão encontrada para este filtro.</p>";
+        return;
+    }
+
+    questions.forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'question-card'; // Alinhado com a classe CSS dos cards principais
+        card.id = `card-filter-q-${q.id}`;
+        card.style.marginBottom = '20px';
+        card.style.maxWidth = '100%';
+        card.style.padding = '20px';
+
+        let alternativasHTML = "";
+        
+        if (q.alternativas) {
+            const gerarEstruturaOpcao = (letra, textoAlt) => {
+                return `
+                    <label class="opcao-filtro-item" id="label-filter-${q.id}-${letra}" style="display:flex; align-items:center; gap:15px; padding:15px; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:15px; background: #fff; transition: all 0.2s;">
+                        <input type="radio" name="filter-radio-${q.id}" value="${letra}" style="display: none;" onclick="selectFilterRadio('${q.id}', '${letra}')">
+                        <div class="circle-letter" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #334155; background: #f8fafc; flex-shrink: 0; transition: all 0.2s;">
+                            ${letra}
+                        </div>
+                        <span style="color: #334155;">${escapeHtml(textoAlt)}</span>
+                    </label>
+                `;
+            };
+
+            if (Array.isArray(q.alternativas)) {
+                alternativasHTML = q.alternativas.map((alt, index) => {
+                    const letra = String.fromCharCode(65 + index);
+                    return gerarEstruturaOpcao(letra, alt);
+                }).join('');
+            } else if (typeof q.alternativas === 'object') {
+                alternativasHTML = Object.keys(q.alternativas).map(letra => {
+                    return gerarEstruturaOpcao(letra, q.alternativas[letra]);
+                }).join('');
+            }
+        }
+
+        if (!alternativasHTML) {
+            alternativasHTML = `<p style="color:#7f8c8d; font-style:italic;">⚠️ Esta questão não possui alternativas cadastradas.</p>`;
+        }
+
+        const jaRespondida = db.user && db.user.respondidas && db.user.respondidas.map(id => String(id)).includes(String(q.id));
+        const tagHistorico = jaRespondida ? `<span style="color:#64748b; font-weight:normal; font-size:11px; background:#f1f5f9; padding:4px 8px; border-radius:4px; margin-left:10px;">🔄 Já resolvida</span>` : '';
+
+        card.innerHTML = `
+            <div class="question-header" style="display:flex; justify-content:space-between; color:#7f8c8d; font-size:12px; margin-bottom:15px; border-bottom: 1px dashed #eee; padding-bottom: 8px;">
+                <span><strong>Banca:</strong> ${q.banca || 'VUNESP'} | <strong>Órgão:</strong> ${q.orgao || 'N/A'} | <strong>Ano:</strong> ${q.ano || 'N/A'} | <strong>ID: #${q.id}</strong> ${tagHistorico}</span>
+                <span style="color: #94a3b8;">${q.materia || ''} > ${q.assunto || ''}</span>
+            </div>
+            
+            <div class="question-text" style="font-size:16px; font-weight:500; margin-bottom:20px; color: #1e293b; line-height: 1.6; text-align: justify;">${q.enunciado}</div>
+            
+            <div class="options-container" id="options-${q.id}" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                ${alternativasHTML}
+            </div>
+            
+            <div id="feedback-${q.id}" style="margin-bottom:15px; font-weight:600; font-size:15px; display: none; padding: 12px; border-radius: 6px;"></div>
+
+            <div class="question-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 15px;">
+                <div class="btn-action-left">
+                    <button class="btn-primary" id="btn-verificar-${q.id}" style="width: fit-content; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; background-color: #3b82f6; color: white; border: none;" onclick="verifyFilterAnswer('${q.id}')">
+                        Resolver Questão
+                    </button>
+                </div>
+                <div class="btn-action-right" style="display: flex; gap: 8px;">
+                    <button class="btn-tab" onclick="toggleExplanationFilter(${q.id})">💡 Comentário Professor</button>
+                    <button class="btn-tab" style="color: var(--btn-blue);" onclick="editQuestion(${q.id})">✏️ Editar</button>
+                    <button class="btn-tab" style="color: var(--btn-red);" onclick="deleteQuestion(${q.id})">❌ Excluir</button>
+                </div>
+            </div>
+            
+            <div class="explanation-box" id="explanation-filter-${q.id}" style="display:none; margin-top:15px; padding:15px; background:#f8fafc; border-left:4px solid #0284c7; border-radius: 4px;">
+                <strong>Gabarito Oficial: Alternativa ${q.correta}</strong><br><br>
+                <div class="markdown-body">${parseMarkdownLocal(q.comentario) || "Sem comentários cadastrados para esta questão."}</div>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+
+    // Re-renderiza fórmulas matemáticas caso existam nos filtros
+    if (window.MathJax && window.MathJax.typeset) {
+        MathJax.typeset();
+    }
+}
+
+// ==========================================
+// --- FUNÇÕES DE INTERAÇÃO DOS FILTROS ---
+// ==========================================
+function toggleExplanationFilter(id) {
+    const box = document.getElementById(`explanation-filter-${id}`);
+    if (box) {
+        if (box.style.display === 'block') {
+            box.style.display = 'none';
+        } else {
+            box.style.display = 'block';
+            
+            // Força o MathJax a redesenhar na aba de filtros
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 60);
+        }
+    }
+}
+
+function selectFilterRadio(questionId, letter) {
+    const container = document.getElementById(`options-${questionId}`);
+    if (!container) return;
+    
+    // Reseta visualmente todas as alternativas do bloco atual
+    const labels = container.querySelectorAll('.opcao-filtro-item');
+    labels.forEach(lbl => {
+        lbl.style.borderColor = '#e2e8f0';
+        lbl.style.backgroundColor = '#fff';
+        const circle = lbl.querySelector('.circle-letter');
+        if (circle) {
+            circle.style.backgroundColor = '#f8fafc';
+            circle.style.color = '#334155';
+        }
+    });
+
+    // Destaca a alternativa e a bolinha (Círculo Escuro + Fonte branca)
+    const labelAtiva = document.getElementById(`label-filter-${questionId}-${letter}`);
+    if (labelAtiva) {
+        labelAtiva.style.borderColor = '#3b82f6';
+        labelAtiva.style.backgroundColor = '#f1f5f9';
+        const circleAtivo = labelAtiva.querySelector('.circle-letter');
+        if (circleAtivo) {
+            circleAtivo.style.backgroundColor = '#111c2e'; // Cor padrão da barra lateral ativa
+            circleAtivo.style.color = '#ffffff';
+        }
+    }
+}
+
+// ==========================================
+// --- VERIFICAÇÃO UNIFICADA: ABA DE FILTROS ---
+// ==========================================
+function verifyFilterAnswer(questionId) {
+    if (!questionId) return;
+    const idString = String(questionId);
+
+    const question = db.questions.find(q => String(q.id) === idString);
+    if (!question) return;
+
+    const selectedRadio = document.querySelector(`input[name="filter-radio-${idString}"]:checked`);
+    if (!selectedRadio) {
+        alert("Por favor, selecione uma alternativa antes de responder!");
+        return;
+    }
+
+    const userAnswer = selectedRadio.value;
+    const feedbackDiv = document.getElementById(`feedback-${idString}`);
+    const btnVerificar = document.getElementById(`btn-verificar-${idString}`);
+    const optionsContainer = document.getElementById(`options-${idString}`);
+
+    if (!db.user) db.user = {};
+    if (!db.user.respondidas) db.user.respondidas = [];
+    if (db.user.acertos === undefined) db.user.acertos = 0;
+    if (db.user.erros === undefined) db.user.erros = 0;
+
+    const jaContabilizada = db.user.respondidas.map(id => String(id)).includes(idString);
+    
+    if (feedbackDiv) feedbackDiv.style.display = "block";
+
+    if (userAnswer === question.correta) {
+        if (!jaContabilizada) {
+            db.user.acertos++;
+            db.user.respondidas.push(idString);
+        }
+        if (feedbackDiv) {
+            feedbackDiv.innerHTML = `<span style="color:#15803d;">✔ Correto!</span> ${jaContabilizada ? '<span style="color:#64748b; font-weight:normal; font-size:13px; margin-left:5px;">(Modo Treino)</span>' : ''}`;
+            feedbackDiv.style.backgroundColor = "#f0fdf4";
+        }
+        selectedRadio.parentElement.style.backgroundColor = '#f0fdf4';
+        selectedRadio.parentElement.style.borderColor = '#22c55e';
+        selectedRadio.parentElement.querySelector('.circle-letter').style.backgroundColor = '#22c55e';
+        selectedRadio.parentElement.querySelector('.circle-letter').style.color = '#fff';
+    } else {
+        if (!jaContabilizada) {
+            db.user.erros++;
+            db.user.respondidas.push(idString);
+        }
+        if (feedbackDiv) {
+            feedbackDiv.innerHTML = `<span style="color:#b91c1c;">❌ Incorreto.</span> Resposta gabarito: <strong>(${question.correta})</strong>`;
+            feedbackDiv.style.backgroundColor = "#fef2f2";
+        }
+        
+        selectedRadio.parentElement.style.backgroundColor = '#fef2f2';
+        selectedRadio.parentElement.style.borderColor = '#ef4444';
+        selectedRadio.parentElement.querySelector('.circle-letter').style.backgroundColor = '#ef4444';
+        selectedRadio.parentElement.querySelector('.circle-letter').style.color = '#fff';
+        
+        // Destaca a alternativa correta em verde para ajudar no estudo
+        if (optionsContainer) {
+            const labels = optionsContainer.querySelectorAll('.opcao-filtro-item');
+            labels.forEach(label => {
+                const radio = label.querySelector('input');
+                if (radio && radio.value === question.correta) {
+                    label.style.backgroundColor = '#f0fdf4';
+                    label.style.borderColor = '#22c55e';
+                    label.querySelector('.circle-letter').style.backgroundColor = '#22c55e';
+                    label.querySelector('.circle-letter').style.color = '#fff';
+                }
+            });
+        }
+    }
+
+    if (btnVerificar) btnVerificar.style.display = 'none';
+
+    // Salva e atualiza o topo do site e a dashboard na hora
+    saveToStorage();
+}
+
+function searchQuestions() {
+    const q = document.getElementById('search-query').value.trim();
+    const container = document.getElementById('container-busca-questoes');
+    
+    // Se o campo estiver vazio, limpa a listagem e para
+    if (!q) {
+        container.innerHTML = "";
+        return;
+    }
+
+    // Transforma o que o usuário digitou em um número inteiro
+    const idProcurado = parseInt(q, 10);
+
+    // Se o usuário digitou letras em vez de números, avisa e limpa
+    if (isNaN(idProcurado)) {
+        container.innerHTML = "<p style='color: red; padding: 10px;'>Por favor, digite apenas o número do ID.</p>";
+        return;
+    }
+
+    // Filtra o banco trazendo APENAS a questão que tem o ID exato
+    const matched = db.questions.filter(quest => {
+        return quest.id === idProcurado;
+    });
+
+    // Renderiza a lista (que terá apenas 1 questão encontrada ou nenhuma)
+    renderQuestionsList(matched, 'container-busca-questoes');
+}
+
+// --- GRÁFICOS (CHART.JS) ---
+        function renderChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            if (myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Acertos (AC)', 'Erros (ER)'],
+                    datasets: [{
+                        data: [db.user.acertos, db.user.erros],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+// Função para atualizar o nome do usuário ativo (Ajustada para o multi-perfil)
+function updateUsername() {
+    const input = document.getElementById('inp-username-config');
+    if (input && input.value.trim() !== "") {
+        db.user.name = input.value.trim();
+        saveToStorage();
+        alert("Nome do perfil atualizado com sucesso!");
+        location.reload(); 
+    }
+}
+
+// Ação do botão "+ Criar Perfil"
+function triggerUserCreation() {
+    const input = document.getElementById('new-user-name-input');
+    if (input && input.value.trim() !== "") {
+        createNewUser(input.value.trim()); // Usa a função que criamos antes
+        input.value = ''; // Limpa o campo de texto
+        updateUIElements(); // Atualiza a lista do seletor na mesma hora
+    } else {
+        alert("Por favor, digite um nome válido.");
+    }
+}
+
+// Ação do botão "Confirmar Troca"
+function triggerUserSwitch() {
+    const selector = document.getElementById('user-profile-selector');
+    if (selector) {
+        const selectedId = selector.value;
+        changeActiveUser(selectedId); // Usa a função com o auto-refresh (reload)
+    }
+}
+
+       // --- IMPORTAÇÃO / EXPORTAÇÃO JSON ---
+        function exportDatabase() {
+            // Converte o objeto para string JSON padronizada eliminando problemas de caracteres e fórmulas
+            const jsonString = JSON.stringify(db, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", url);
+            downloadAnchor.setAttribute("download", "banco_questoes_mapa.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            
+            // Limpa o link da memória do navegador
+            downloadAnchor.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function triggerImport() { document.getElementById('import-file').click(); }
+
+        function importDatabase(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const imported = JSON.parse(evt.target.result);
+                    // Validação estrutural robusta do banco importado
+                    if (imported && typeof imported === 'object' && 'questions' in imported && 'user' in imported) {
+                        db = imported;
+                        saveToStorage();
+                        alert("Banco de dados importado com sucesso!");
+                        switchView('dashboard');
+                    } else {
+                        alert("Arquivo JSON inválido: Estrutura do mapa de questões incorreta.");
+                    }
+                } catch (err) {
+                    alert("Erro ao ler o arquivo de backup: O formato interno do JSON está corrompido.");
+                }
+            };
+            reader.readAsText(file, "UTF-8");
+        }
+
+      function resetHistory() {
+    if (confirm("Atenção! Isso zerará o contador de acertos e erros do seu perfil e permitirá responder as questões novamente. Continuar?")) {
+        
+        // 1. Zera o placar no objeto 'db'
+        db.user.acertos = 0;
+        db.user.erros = 0;
+        
+        // 2. O PULO DO GATO: Se o seu db guarda as questões respondidas em um array, esvazia ele!
+        if (db.user.respondidas) {
+            db.user.respondidas = []; 
+        }
+        
+        // 3. Se o seu sistema salva o estado direto dentro de cada questão (ex: questao.respondida = true),
+        // esse bloco varre todas as questões do seu banco e "reseta" o status delas para inéditas
+        if (db.questoes && Array.isArray(db.questoes)) {
+            db.questoes.forEach(q => {
+                delete q.respondida;      // Remove a marcação de respondida
+                delete q.alternativaSelecionada; // Remove a alternativa que você tinha clicado
+                delete q.correta;         // Se houver alguma flag de status
+            });
+        }
+
+        // 4. Salva o banco atualizado (e agora limpo de histórico) de volta no armazenamento
+        saveToStorage();
+        
+        // 5. Atualiza a tela para o Dashboard com tudo zerado e pronto para uso
+        switchView('dashboard');
+        
+        // Se mesmo assim o visual dos botões antigos continuar "preso" na tela, 
+        // descomente a linha abaixo (removendo as duas barras //) para forçar o recarregamento limpo:
+        // location.reload();
+    }
+}
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+</html>
