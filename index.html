@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Questões - Sistema Premium</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+window.MathJax = {
+    tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        processEnvironments: true
+    },
+    options: {
+        // Ignora elementos HTML como <br> se eles aparecerem no meio de uma fórmula de uma linha só
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    startup: {
+        pageReady: () => {
+            return MathJax.startup.defaultPageReady();
+        }
+    }
+};
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --sidebar-bg: #111c2e;
+            --sidebar-hover: #1a2942;
+            --sidebar-active: #1d4ed8;
+            --main-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #f8fafc;
+            --border-color: #e2e8f0;
+            
+            --btn-blue: #0284c7;
+            --btn-orange: #ea580c;
+            --btn-red: #dc2626;
+            --btn-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            background-color: var(--main-bg);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            padding: 0 20px 20px 20px;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #243754;
+        }
+
+        .user-panel {
+            background-color: #0b1320;
+            padding: 15px;
+            margin: 15px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .user-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .user-stats {
+            color: #94a3b8;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            flex-grow: 1;
+            margin-top: 10px;
+        }
+
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            transition: background 0.2s;
+            color: #cbd5e1;
+        }
+
+        .sidebar-item:hover {
+            background-color: var(--sidebar-hover);
+            color: #fff;
+        }
+
+        .sidebar-item.active {
+            background-color: var(--sidebar-active);
+            color: #fff;
+            border-left: 4px solid #60a5fa;
+        }
+
+        .sidebar-footer {
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-sidebar-action {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-sidebar-action:hover { opacity: 0.9; }
+        .btn-export { background-color: var(--btn-blue); }
+        .btn-import { background-color: var(--btn-orange); }
+        .btn-reset { background-color: var(--btn-red); }
+
+        /* --- MAIN CONTENT CONTAINER --- */
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 40px;
+            height: 100%;
+        }
+
+        .view-panel {
+            display: none;
+        }
+
+        .view-panel.active {
+            display: block;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 25px;
+            color: #0f172a;
+        }
+
+        /* --- FORMULÁRIOS E INPUTS --- */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        input, select, textarea {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            background-color: #fff;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        /* --- MODO INTELIGENTE BOX --- */
+        .intelligent-box {
+            border: 2px dashed #cbd5e1;
+            background-color: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .intelligent-box-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .intelligent-box p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .intelligent-box textarea {
+            width: 100%;
+            height: 80px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .btn-process {
+            margin-top: 10px;
+            background-color: #1e293b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background-color: var(--btn-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* --- CARD DE QUESTÃO (RESOLUÇÃO) --- */
+        
+        .question-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .question-header {
+            font-size: 13px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .question-header strong {
+            color: #334155;
+        }
+
+        .question-text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-line;
+        }
+
+        .question-text img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .alternatives-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alternative-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .alternative-item:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .alternative-item.selected {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+        }
+
+        .alternative-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 13px;
+            background-color: #fff;
+            flex-shrink: 0;
+        }
+
+        .alternative-item.selected .alternative-badge {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .alternative-text {
+            font-size: 14px;
+        }
+
+        .question-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        .btn-action-left button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-action-left button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .btn-action-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-tab {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #475569;
+        }
+
+        .btn-tab:hover { background-color: #f1f5f9; }
+
+        .explanation-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        /* --- DASHBOARD E CARDS --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        /* --- BUSCA E LISTAS --- */
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex-grow: 1;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        .feedback-correct {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+        }
+
+        .feedback-wrong {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+        }
+
+        /* =======================================================
+   --- DESIGN RESPONSIVO TOTAL PARA CELULARES (BLINDADO) ---
+   ======================================================= */
+@media (max-width: 768px) {
+    /* Reseta o corpo da página para não criar barras de rolagem laterais */
+    html, body {
+        width: 100% !important;
+        overflow-x: hidden !important; /* Corta qualquer vazamento lateral fantasma */
+        margin: 0 !important;
+        padding: 5px !important;
+        box-sizing: border-box;
+    }
+
+    /* Força QUALQUER div principal, container ou seção a caber no celular */
+    div, section, main, header, .container, .main-content, .wrapper {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        float: none !important; /* Desativa alinhamentos antigos que quebram o mobile */
+    }
+
+    /* Ajusta o card da questão */
+    .question-card {
+        padding: 12px !important;
+        margin: 8px 0 !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+    }
+
+    /* Transforma as abas/botões de navegação superiores em botões empilhados */
+    .nav-tabs, .menu-tabs, .tabs-container, .navbar {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 6px !important;
+        padding: 0 !important;
+        margin-bottom: 15px !important;
+    }
+
+    .nav-tabs button, .tab-btn, .menu-item {
+        width: 100% !important;
+        text-align: center !important;
+        padding: 12px !important;
+        margin: 0 !important;
+    }
+
+    /* Organiza as alternativas para telas finas */
+    .alternative-item {
+        display: flex !important;
+        align-items: flex-start !important;
+        padding: 10px !important;
+        font-size: 14px !important;
+    }
+
+    .alternative-text {
+        word-break: break-word !important; /* Força textos longos a quebrarem a linha em vez de esticarem */
+    }
+
+    /* Empilha os botões de ação abaixo da questão */
+    .question-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .btn-action-left, .btn-action-right {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    .question-actions button, .btn-tab {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 12px !important;
+    }
+
+    /* Trata todos os formulários e inputs de cadastro de questões */
+    input, select, textarea, form {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        font-size: 16px !important; /* Evita que o iOS dê zoom automático indesejado ao clicar */
+    }
+}
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div>
+            <div class="sidebar-brand">🗺️ Mapa de Questões</div>
+            
+            <div class="user-panel">
+                <div class="user-name" id="sb-username">Visitante</div>
+                <div class="user-stats" id="sb-performance">Desempenho: 0 AC / 0 ER</div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-item active" onclick="switchView('dashboard')">📊 Dashboard</li>                
+                <li class="sidebar-item" onclick="switchView('filtros')">📖 Matérias</li>
+                <li class="sidebar-item" onclick="switchView('encontrar')">🔎 Encontrar Questão</li>
+                <li class="sidebar-item" onclick="switchView('grafico')">📈 Ver Meu Gráfico</li>
+                <li class="sidebar-item" onclick="switchView('enviar')">➕ Enviar Questões</li>
+                <li class="sidebar-item" onclick="switchView('multiplas')">🚀 Enviar em Massa</li>
+                <li class="sidebar-item" onclick="switchView('usuario')">👤 Cadastrar Usuário</li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="btn-sidebar-action btn-export" onclick="exportDatabase()">Exportar Banco</button>
+            <button class="btn-sidebar-action btn-import" onclick="triggerImport()">Importar Banco</button>
+            <button class="btn-sidebar-action btn-reset" onclick="resetHistory()">Zerar Histórico</button>
+            <input type="file" id="import-file" style="display: none;" onchange="importDatabase(event)">
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        <div id="view-dashboard" class="view-panel active">
+            <h2>Dashboard de Desempenho</h2>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total de Questões no Banco</div>
+                    <div class="stat-value" id="dash-total-q">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Questões Respondidas</div>
+                    <div class="stat-value" id="dash-total-resp">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Taxa de Acerto</div>
+                    <div class="stat-value" id="dash-taxa-acerto">0%</div>
+                </div>
+            </div>
+            <div class="stat-card" style="margin-top: 20px;">
+                <h3>Bem-vindo ao seu ambiente de simulados!</h3>
+                <p style="margin-top: 10px; color: var(--text-muted); line-height: 1.5;">
+                    Utilize o menu lateral para gerenciar suas questões, filtrar por assuntos específicos ou realizar cadastros em massa usando a ferramenta inteligente de captura HTML.
+                </p>
+            </div>
+        </div>
+
+        <div id="view-grafico" class="view-panel">
+            <h2>Estatísticas de Aproveitamento</h2>
+            <div class="stat-card" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+
+        <div id="view-todas" class="view-panel">
+            <h2>Todas as Questões</h2>
+            <div id="container-todas-questoes"></div>
+        </div>
+
+        <div id="view-filtros" class="view-panel">
+            <h2>Selecione o Filtro de Pesquisa</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Banca</label>
+                    <select id="filter-banca" onchange="applyFilters()"><option value="">Todas</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Matéria</label>
+                    <select id="filter-materia" onchange="applyFilters()"><option value="">Todas</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Assunto</label>
+                    <select id="filter-assunto" onchange="applyFilters()"><option value="">Todos</option></select>
+                </div>
+            </div>
+            <div id="container-filtros-questoes" style="margin-top: 20px;"></div>
+        </div>
+
+        <div id="view-encontrar" class="view-panel">
+            <h2>Encontrar Questão por ID</h2>
+            <div class="search-container">
+                <input type="text" id="search-query" class="search-input" placeholder="Digite o ID da questão desejada." oninput="searchQuestions()">
+            </div>
+            <div id="container-busca-questoes"></div>
+        </div>
+
+        <div id="view-multiplas" class="view-panel">
+            <h2>Mapeador de Questões Automático</h2>
+            <p style="color: #64748b; margin-bottom: 15px;">
+                Abra o site de questões, exiba o código-fonte (Ctrl + U), copie todo o HTML e cole no campo abaixo.
+            </p>    
+            
+            <textarea id="html-bruto-input" rows="12" style="width: 100%; font-family: monospace; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; resize: vertical; background-color: #fff; color: #333;" placeholder="Cole o código HTML bruto aqui..."></textarea>    
+            
+            <button onclick="processarHTMLMultiplo()" style="background-color: #2563eb; color: white; border: none; padding: 12px 24px; font-weight: bold; border-radius: 6px; margin-top: 15px; cursor: pointer; width: 100%;">
+                🚀 Processar e Cadastrar Questões
+            </button>
+            
+            <div id="feedback-container" style="margin-top: 20px; display: none; padding: 15px; border-radius: 6px; font-size: 14px;"></div>
+        </div>
+
+        <div id="view-enviar" class="view-panel">
+            <h2>Enviar Nova Questão</h2>
+            
+            <div class="intelligent-box">
+                <div class="intelligent-box-title">⚡ Modo Inteligente: Auto-Cadastro por HTML</div>
+                <p>Cole o código HTML da sua plataforma de questões abaixo. O sistema extrairá de forma limpa!</p>
+                <textarea id="html-pasted" placeholder="Cole a estrutura HTML da questão aqui..."></textarea>
+                <button type="button" class="btn-process" onclick="processPastedHTML()">Processar HTML</button>
+            </div>
+
+            <form id="form-nova-questao" onsubmit="saveQuestion(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Banca Examinadora</label>
+                        <input type="text" id="inp-banca" required placeholder="Ex: VUNESP">
+                    </div>
+                    <div class="form-group">
+                        <label>Órgão</label>
+                        <input type="text" id="inp-orgao" placeholder="Ex: Pref. Santos / SP">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cargo(s)</label>
+                        <input type="text" id="inp-cargo" placeholder="Ex: Técnico de Administração">
+                    </div>
+                    <div class="form-group">
+                        <label>Ano</label>
+                        <input type="number" id="inp-ano" required placeholder="Ex: 2026">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Matéria</label>
+                        <input type="text" id="inp-materia" required placeholder="Ex: Matemática">
+                    </div>
+                    <div class="form-group">
+                        <label>Assunto</label>
+                        <input type="text" id="inp-assunto" placeholder="Ex: Proporcionalidade / Regra de Três">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantidade de Alternativas</label>
+                        <select id="inp-qtd-alternativas" onchange="adjustAlternativeInputs()">
+                            <option value="5">5 (A até E)</option>
+                            <option value="4">4 (A até D)</option>
+                            <option value="3">3 (A até C)</option>
+                            <option value="2">2 (A até B)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="gap: 10px; margin-bottom: 15px;">
+                    <label>Alternativas</label>
+                    <div style="display:flex; align-items:center; gap:10px;"><strong>A</strong> <input type="text" id="inp-altA" style="flex:1;" required></div>
+                    <div style="display:flex; align-items:center; gap:10px;"><strong>B</strong> <input type="text" id="inp-altB" style="flex:1;" required></div>
+                    <div style="display:flex; align-items:center; gap:10px;" id="box-altC"><strong>C</strong> <input type="text" id="inp-altC" style="flex:1;" required></div>
+                    <div style="display:flex; align-items:center; gap:10px;" id="box-altD"><strong>D</strong> <input type="text" id="inp-altD" style="flex:1;" required></div>
+                    <div style="display:flex; align-items:center; gap:10px;" id="box-altE"><strong>E</strong> <input type="text" id="inp-altE" style="flex:1;" required></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Alternativa Correta</label>
+                        <select id="inp-correta" required>
+                            <option value="">Selecione...</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C" id="opt-corretaC">C</option>
+                            <option value="D" id="opt-corretaD">D</option>
+                            <option value="E" id="opt-corretaE">E</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Comentários / Explicação</label>
+                    <textarea id="inp-comentario" rows="4" placeholder="Insira o gabarito comentado ou resolução passo a passo... Aceita fórmulas matemáticas."></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Enunciado da Questão</label>
+                    <textarea id="inp-enunciado" rows="6" placeholder="O enunciado extraído ou digitado aparecerá aqui..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btn-submit-questao">Cadastrar Questão</button>
+            </form>
+        </div>
+
+        <div id="view-usuario" class="view-panel">
+            <h2>Configurações do Usuário</h2>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px; max-width: 500px; width: 100%;">
+                
+                <div class="stat-card">
+                    <div class="form-group">
+                        <label>Alterar Nome do Perfil Ativo</label>
+                        <input type="text" id="inp-username-config" value="Marco Lopes">
+                        <button class="btn-submit" style="width: fit-content;" onclick="updateUsername()">Salvar Nome</button>
+                    </div>
+                </div>
+
+        <div class="stat-card">
+            <div class="form-group">
+                <label>Cadastrar Novo Perfil</label>
+                <input type="text" id="new-username-input" placeholder="Ex: Pedro Silva, Maria Souza...">
+                <button class="btn-submit" style="width: fit-content; background-color: #3498db;" onclick="triggerUserCreation()">+ Criar Perfil</button>
+            </div>
+        </div>
+
+                <div class="stat-card">
+                    <div class="form-group">
+                        <label>Trocar de Usuário Ativo</label>
+                        <select id="user-profile-selector" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; margin-bottom: 10px; font-size: 14px;">
+                            </select>
+                        <button class="btn-submit" style="width: fit-content; background-color: #f39c12;" onclick="triggerUserSwitch()">Confirmar Troca</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    <script>     
+// ==========================================
+// --- MOTOR DE PROCESSAMENTO DE MARKDOWN E HTML ---
+// ==========================================
+function parseMarkdown(text) {
+    if (!text) return "";
+    
+    // 1. REVERTER O ESCAPE (Aceita suas tags HTML como <strong style="color:blue">)
+    let decodedText = text
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&");
+
+    // 2. SUPORTE A TÍTULOS DE IA (### Qualquer Texto)
+    decodedText = decodedText.replace(/###\s*([^<\n\r]+)/g, function(match, titleContent) {
+        return `<h3 style="margin-top:14px; margin-bottom:4px; font-size:15px; font-weight:700; color:#111c2e; display:block;">${titleContent.trim()}</h3>`;
+    });
+
+    // 3. PROCESSAR SINTAXE DE NEGRITO DE IA (**texto**)
+    decodedText = decodedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // 4. PROCESSAR QUEBRAS DE LINHA (\n vira <br>)
+    // Usamos uma classe temporária para que o MathJax saiba o que ignorar se necessário
+    decodedText = decodedText.replace(/\n/g, '<br>');
+
+    // 5. SUPORTE A LISTAS DE MARKDOWN (- Item ou * Item)
+    decodedText = decodedText.replace(/^[\*|-]\s(.*$)/gim, '<li>$1</li>');
+
+    // 6. LIMPEZA DE ACABAMENTO VISUAL
+    decodedText = decodedText.replace(/<\/h3><br>/g, '</h3>');
+    decodedText = decodedText.replace(/<br><h3/g, '<h3');
+
+    return decodedText;
+}
+
+function parseMarkdownLocal(text) {
+    return parseMarkdown(text);
+}
+
+// Banco de Dados em LocalStorage
+let db = JSON.parse(localStorage.getItem('mapa_questoes_db')) || {
+    users: [], // Começa com a lista de usuários vazia se for a primeira vez na vida
+    questions: []
+};
+
+// 🔥 AUTOMAÇÃO DE IDS: Garante que cada questão tenha um ID numérico fixo
+if (db && db.questions && Array.isArray(db.questions)) {
+    let alterouBanco = false;
+
+    db.questions.forEach((quest, index) => {
+        // Se a questão não tiver ID ou o ID não for um número válido, cadastra o sequencial (1, 2, 3...)
+        if (quest.id === undefined || quest.id === null || isNaN(quest.id)) {
+            quest.id = index + 1;
+            alterouBanco = true; // Avisa que precisamos salvar a correção
+        }
+    });
+
+    // Se o script precisou gerar algum ID que estava faltando, salva no LocalStorage para eternizar
+    if (alterouBanco) {
+        localStorage.setItem('mapa_questoes_db', JSON.stringify(db));
+    }
+}
+
+        // --- SISTEMA MULTI-USUÁRIO (MIGRAÇÃO E INICIALIZAÇÃO) ---
+        if (!db.users || db.users.length === 0) {
+            // Cria o primeiro usuário no formato novo
+            db.users = [{
+                id: "user-1",
+                name: "Visitante",
+                acertos: 0,
+                erros: 0,
+                respondidas: []
+            }];
+            // Define ele como o usuário ativo
+            db.user = db.users[0];
+            localStorage.setItem('mapa_questoes_db', JSON.stringify(db));
+        }
+
+        // Garante que o usuário ativo (db.user) aponte para um usuário válido da lista
+        if (!db.user || !db.user.id) {
+            db.user = db.users[0];
+        }
+
+        // Garante que todos os usuários tenham a lista de respondidas criada ao carregar a página
+        db.users.forEach(u => {
+            if (!u.respondidas) u.respondidas = [];
+        });
+        // ---------------------------------------------------------
+
+        let currentSelections = {}; 
+        let myChart = null;
+        let editingId = null;
+
+        // Inicialização do sistema
+        document.addEventListener("DOMContentLoaded", () => {
+            updateUIElements();
+            populateFilterDropdowns();
+        });
+
+      function saveToStorage() {
+    // Sincroniza os dados do usuário atual dentro da lista de usuários
+    if (db.users && db.user) {
+        const index = db.users.findIndex(u => u.id === db.user.id);
+        if (index !== -1) {
+            db.users[index] = db.user;
+        }
+    }
+    
+    // Salva o banco completo no LocalStorage
+    localStorage.setItem('mapa_questoes_db', JSON.stringify(db));
+    
+    // --- FORÇAR ATUALIZAÇÃO VISUAL DO PLACAR ---
+    // Varre todas as possíveis funções do seu simulado para atualizar os números na tela na hora
+    if (typeof updateUIElements === "function") updateUIElements();
+    if (typeof updateDashboard === "function") updateDashboard();
+    if (typeof renderStats === "function") renderStats();
+    if (typeof updateStats === "function") updateStats();
+    if (typeof atualizarPlacar === "function") atualizarPlacar();
+    if (typeof loadStats === "function") loadStats();
+    if (typeof initStats === "function") initStats();
+    if (typeof checkUserStats === "function") checkUserStats();
+}
+
+        function updateUIElements() {
+            // 1. Atualiza os elementos da Sidebar
+            const sbUsername = document.getElementById('sb-username');
+            const inpUsername = document.getElementById('inp-username-config');
+            const sbPerformance = document.getElementById('sb-performance');
+
+            if (sbUsername && db.user) sbUsername.textContent = db.user.name;
+            if (inpUsername && db.user) inpUsername.value = db.user.name;
+            if (sbPerformance && db.user) {
+                sbPerformance.textContent = `Desempenho: ${db.user.acertos} AC / ${db.user.erros} ER`;
+            }
+
+            // 2. Preenche o seletor de perfis com a lista de usuários
+            const selector = document.getElementById('user-profile-selector');
+            if (selector && db.users) {
+                selector.innerHTML = '';
+                db.users.forEach(u => {
+                    const option = document.createElement('option');
+                    option.value = u.id;
+                    option.textContent = `${u.name} (Acertos: ${u.acertos} | Erros: ${u.erros})`;
+                    if (u.id === db.user.id) {
+                        option.selected = true;
+                    }
+                    selector.appendChild(option);
+                });
+            }
+
+            // 3. Atualiza os dados do Dashboard (Garante que os números mudem na tela)
+            const dashTotalQ = document.getElementById('dash-total-q');
+            const dashTotalResp = document.getElementById('dash-total-resp');
+            const dashTaxaAcerto = document.getElementById('dash-taxa-acerto');
+
+            if (dashTotalQ && db.questions) {
+                dashTotalQ.textContent = db.questions.length;
+            }
+
+            if (db.user) {
+                const totalResp = db.user.acertos + db.user.erros;
+                if (dashTotalResp) dashTotalResp.textContent = totalResp;
+
+                const taxa = totalResp > 0 ? Math.round((db.user.acertos / totalResp) * 100) : 0;
+                if (dashTaxaAcerto) dashTaxaAcerto.textContent = `${taxa}%`;
+            }
+        }
+
+function updateUsername() {
+            const input = document.getElementById('inp-username-config');
+            if (input && input.value.trim() !== "") {
+                db.user.name = input.value.trim();
+                saveToStorage();
+                alert("Nome do perfil atualizado com sucesso!");
+                location.reload(); 
+            }
+        }
+
+       function triggerUserCreation() {
+            // Teste de captura do clique
+            console.log("Função triggerUserCreation disparada com sucesso!");
+            
+            const usernameInput = document.getElementById('new-username-input');
+            if (!usernameInput) {
+                alert("Erro interno: O campo de texto do usuário não foi encontrado no sistema.");
+                return;
+            }
+            
+            const name = usernameInput.value.trim();
+            if (!name) {
+                alert("Por favor, digite um nome para o novo perfil!");
+                return;
+            }
+
+            // Inicializa a lista de usuários e o banco de dados se não existirem
+            if (!db) db = { questions: [], user: {}, users: [] };
+            if (!db.users) db.users = [];
+
+            // Verifica duplicados
+            const existe = db.users.find(u => u.name.toLowerCase() === name.toLowerCase());
+            if (existe) {
+                alert("Já existe um perfil com este nome! Escolha outro.");
+                return;
+            }
+
+            // Cria a estrutura do novo perfil de estudante
+            const newUser = {
+                id: Date.now(),
+                name: name,
+                acertos: 0,
+                erros: 0,
+                respondidas: [],
+                historicoRespostas: {}
+            };
+
+            // Adiciona e define como perfil ativo
+            db.users.push(newUser);
+            db.user = newUser;
+
+            // Salva no LocalStorage
+            saveToStorage();
+
+            // Limpa o input
+            usernameInput.value = "";
+
+            alert(`Perfil "${name}" criado e ativado com sucesso!`);
+
+            // Força atualização da interface do sistema
+            if (typeof renderUsersList === "function") renderUsersList();
+            if (typeof updateUIElements === "function") updateUIElements();
+            
+            // Redireciona para o Dashboard automaticamente
+            if (typeof switchView === "function") {
+                switchView('dashboard');
+            } else {
+                location.reload();
+            }
+        }
+
+       function triggerUserSwitch() {
+            const selector = document.getElementById('user-profile-selector');
+            if (!selector) {
+                alert("Erro interno: O seletor de perfis não foi encontrado na página.");
+                return;
+            }
+
+            const selectedId = selector.value;
+            if (!selectedId) {
+                alert("Por favor, selecione um perfil válido.");
+                return;
+            }
+
+            console.log("Disparando troca para o usuário ID:", selectedId);
+
+            if (!db.users || db.users.length === 0) {
+                alert("Nenhum perfil cadastrado no sistema.");
+                return;
+            }
+
+            // Busca o usuário selecionado no banco de dados (convertendo ambos para Number para evitar conflito de tipo)
+            const targetUser = db.users.find(u => Number(u.id) === Number(selectedId));
+
+            if (!targetUser) {
+                alert("Erro: O perfil selecionado não foi encontrado no banco de dados.");
+                return;
+            }
+
+            // Garante que o usuário que está assumindo tenha a estrutura de dados correta
+            if (!targetUser.respondidas) targetUser.respondidas = [];
+            if (!targetUser.historicoRespostas) targetUser.historicoRespostas = {};
+            if (targetUser.acertos === undefined) targetUser.acertos = 0;
+            if (targetUser.erros === undefined) targetUser.erros = 0;
+
+            // Define o novo usuário selecionado como o perfil ATIVO do simulador
+            db.user = targetUser;
+
+            // Salva o novo estado no LocalStorage
+            saveToStorage();
+
+            alert(`Perfil alterado com sucesso! Agora estudando como: ${targetUser.name}`);
+
+            // Atualiza a interface e renderiza as métricas do novo usuário
+            if (typeof updateUIElements === "function") updateUIElements();
+            if (typeof renderUsersList === "function") renderUsersList();
+
+            // Redireciona para o Dashboard com os dados atualizados do novo perfil
+            if (typeof switchView === "function") {
+                switchView('dashboard');
+            } else {
+                location.reload(); // Recarrega a página caso o roteador de telas não esteja no escopo
+            }
+        }
+
+        // --- SISTEMA DE ABAS (VIEWS) ENGENHARIA CORRIGIDA ---
+        // --- SISTEMA DE ABAS (VIEWS) ENGENHARIA CORRIGIDA ---
+        function switchView(viewName, isEditingTrigger = false) {
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            
+            const targetPanel = document.getElementById(`view-${viewName}`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+            
+            const items = Array.from(document.querySelectorAll('.sidebar-item'));
+            const target = items.find(i => i.textContent.toLowerCase().includes(viewName.substring(0, 4)));
+            if (target) target.classList.add('active');
+
+            // Chamada corrigida usando a função unificada adicionada abaixo
+            if (viewName === 'todas') {
+                renderFilterQuestionsList(db.questions, 'container-todas-questoes');
+            }
+            
+            if (viewName === 'filtros') { 
+                populateFilterDropdowns(); 
+                applyFilters(); 
+            }
+            
+            // Atualização ou inicialização estável do gráfico do Chart.js
+            if (viewName === 'grafico') {
+                updateChart();
+            }
+            
+            if (viewName === 'enviar' && !isEditingTrigger) {
+                editingId = null;
+                document.getElementById('form-nova-questao').reset();
+                document.getElementById('btn-submit-questao').textContent = "Cadastrar Questão";
+                adjustAlternativeInputs();
+            }
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('myChart');
+            if (!ctx) return;
+
+            if (myChart instanceof Chart) {
+                myChart.destroy();
+            }
+
+            if (!db.user) db.user = { acertos: 0, erros: 0 };
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Acertos', 'Erros'],
+                    datasets: [{
+                        label: 'Quantidade',
+                        data: [db.user.acertos || 0, db.user.erros || 0],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        function adjustAlternativeInputs() {
+            const qtd = document.getElementById('inp-qtd-alternativas').value;
+            const boxC = document.getElementById('box-altC');
+            const boxD = document.getElementById('box-altD');
+            const boxE = document.getElementById('box-altE');
+            const optC = document.getElementById('opt-corretaC');
+            const optD = document.getElementById('opt-corretaD');
+            const optE = document.getElementById('opt-corretaE');
+
+            boxC.style.display = "flex"; document.getElementById('inp-altC').required = true; optC.style.display = "block";
+            boxD.style.display = "flex"; document.getElementById('inp-altD').required = true; optD.style.display = "block";
+            boxE.style.display = "flex"; document.getElementById('inp-altE').required = true; optE.style.display = "block";
+
+            if (qtd === "4") {
+                boxE.style.display = "none"; document.getElementById('inp-altE').required = false; optE.style.display = "none";
+            } else if (qtd === "3") {
+                boxD.style.display = "none"; document.getElementById('inp-altD').required = false; optD.style.display = "none";
+                boxE.style.display = "none"; document.getElementById('inp-altE').required = false; optE.style.display = "none";
+            } else if (qtd === "2") {
+                boxC.style.display = "none"; document.getElementById('inp-altC').required = false; optC.style.display = "none";
+                boxD.style.display = "none"; document.getElementById('inp-altD').required = false; optD.style.display = "none";
+                boxE.style.display = "none"; document.getElementById('inp-altE').required = false; optE.style.display = "none";
+            }
+        }
+
+        // --- PARSER DO MODO INTELIGENTE (INDIVIDUAL) ---
+        function processPastedHTML() {
+            const htmlContent = document.getElementById('html-pasted').value.trim();
+            if (!htmlContent) return alert("Por favor, cole um fragmento de código HTML válido.");
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            let banca = "", orgao = "", cargo = "", ano = "", materia = "", assunto = "";
+            const headerParagraphs = doc.querySelectorAll('[class*="header"] p');
+            if (headerParagraphs.length > 0) {
+                headerParagraphs.forEach(p => {
+                    const strong = p.querySelector('strong');
+                    if (strong) {
+                        const label = strong.textContent.trim().toLowerCase();
+                        let value = p.textContent.replace(strong.textContent, '').trim();
+                        if (label.includes('banca')) banca = value;
+                        else if (label.includes('orgão') || label.includes('órgão')) orgao = value;
+                        else if (label.includes('cargo')) cargo = value;
+                        else if (label.includes('ano')) ano = value;
+                        else if (label.includes('materia') || label.includes('matéria')) {
+                            const partes = value.split('>');
+                            if (partes.length > 0) materia = partes[0].trim();
+                            if (partes.length > 1) assunto = partes.slice(1).join('>').trim();
+                        }
+                    }
+                });
+            }
+            const enunciadoEl = doc.querySelector('[class*="chamada"], .ft-size14');
+            let enunciado = "";
+            if (enunciadoEl) {
+                const allowedTags = ['b', 'strong', 'i', 'u', 'em', 'img', 'p', 'br'];
+                enunciado = enunciadoEl.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = enunciado;
+                const allElements = tempDiv.getElementsByTagName('*');
+                for (let i = allElements.length - 1; i >= 0; i--) {
+                    const el = allElements[i];
+                    if (!allowedTags.includes(el.tagName.toLowerCase())) {
+                        while (el.firstChild) el.parentNode.insertBefore(el.firstChild, el);
+                        el.parentNode.removeChild(el);
+                    } else {
+                        if (el.tagName.toLowerCase() !== 'img') {
+                            while (el.attributes.length > 0) el.removeAttribute(el.attributes[0].name);
+                        }
+                    }
+                }
+                enunciado = tempDiv.innerHTML.trim();
+            }
+            let alternativas = { A: "", B: "", C: "", D: "", E: "" };
+            const altBlocks = doc.querySelectorAll('[class*="alternativaItem"]');
+            altBlocks.forEach(block => {
+                const buttonSelector = block.querySelector('[class*="alternativaSelecionar"]');
+                const textSelector = block.querySelector('[class*="alternativaTexto"]');
+                if (buttonSelector && textSelector) {
+                    const letra = buttonSelector.textContent.trim().toUpperCase();
+                    if (alternativas.hasOwnProperty(letra)) {
+                        alternativas[letra] = textSelector.textContent.trim();
+                    }
+                }
+            });
+            document.getElementById('inp-banca').value = banca;
+            document.getElementById('inp-orgao').value = orgao;
+            document.getElementById('inp-cargo').value = cargo;
+            document.getElementById('inp-ano').value = ano;
+            document.getElementById('inp-materia').value = materia;
+            document.getElementById('inp-assunto').value = assunto;
+            document.getElementById('inp-enunciado').value = enunciado;
+            document.getElementById('inp-altA').value = alternativas.A;
+            document.getElementById('inp-altB').value = alternativas.B;
+            document.getElementById('inp-altC').value = alternativas.C;
+            document.getElementById('inp-altD').value = alternativas.D;
+            document.getElementById('inp-altE').value = alternativas.E;
+        }
+
+        // --- SISTEMA DE FILTROS E POPULAÇÃO DE DROPDOWNS ---
+        function populateFilterDropdowns() {
+            const bancas = new Set();
+            const materias = new Set();
+            const assuntos = new Set();
+
+            db.questions.forEach(q => {
+                if (q.banca) bancas.add(q.banca.trim());
+                if (q.materia) materias.add(q.materia.trim());
+                if (q.assunto) assuntos.add(q.assunto.trim());
+            });
+
+            buildDropdown('filter-banca', bancas);
+            buildDropdown('filter-materia', materias);
+            buildDropdown('filter-assunto', assuntos);
+        }
+
+        function buildDropdown(elementId, setValues) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const valAntigo = el.value;
+            el.innerHTML = '<option value="">Todas / Todos</option>';
+            Array.from(setValues).sort().forEach(val => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = val;
+                el.appendChild(opt);
+            });
+            el.value = valAntigo;
+        }
+
+        function applyFilters() {
+            const fBanca = document.getElementById('filter-banca').value.toLowerCase();
+            const fMateria = document.getElementById('filter-materia').value.toLowerCase();
+            const fAssunto = document.getElementById('filter-assunto').value.toLowerCase();
+
+            const filtradas = db.questions.filter(q => {
+                const matchBanca = !fBanca || (q.banca && q.banca.toLowerCase() === fBanca);
+                const matchMateria = !fMateria || (q.materia && q.materia.toLowerCase() === fMateria);
+                const matchAssunto = !fAssunto || (q.assunto && q.assunto.toLowerCase() === fAssunto);
+                return matchBanca && matchMateria && matchAssunto;
+            });
+
+            renderFilterQuestionsList(filtradas, 'container-filtros-questoes');
+        }
+
+        // --- ARQUITETURA DE RENDERIZAÇÃO UNIFICADA ---
+        function renderFilterQuestionsList(questionsArray, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = "";
+
+            if (!questionsArray || questionsArray.length === 0) {
+                container.innerHTML = '<p class="placeholder-text">Nenhuma questão encontrada para este critério.</p>';
+                return;
+            }
+
+            questionsArray.forEach((q, idx) => {
+                if (!q.id) q.id = idx + 1;
+                if (!q.alternativas) {
+                    q.alternativas = {
+                        A: q.a || q.altA || "",
+                        B: q.b || q.altB || "",
+                        C: q.c || q.altC || "",
+                        D: q.d || q.altD || "",
+                        E: q.e || q.altE || ""
+                    };
+                }
+            });
+
+            questionsArray.forEach(q => {
+                const card = document.createElement('div');
+                card.className = "question-card";
+                card.id = `card-q-${q.id}`;
+
+                let headerText = `<strong>ID: ${q.id}</strong> | <strong>Banca:</strong> ${q.banca || 'Não informada'}`;
+                if (q.orgao) headerText += ` | <strong>Órgão:</strong> ${q.orgao}`;
+                if (q.cargo) headerText += ` | <strong>Cargo:</strong> ${q.cargo}`;
+                if (q.ano) headerText += ` | <strong>Ano:</strong> ${q.ano}`;
+                if (q.materia) headerText += ` | <strong>Matéria:</strong> <span style="color:#0284c7; font-weight:600;">${q.materia}</span>`;
+                if (q.assunto) headerText += ` | <strong>Assunto:</strong> <span style="color:#ea580c; font-weight:600;">${q.assunto}</span>`;
+
+                let altsHtml = "";
+                const ordens = ['A', 'B', 'C', 'D', 'E'];
+                ordens.forEach(letra => {
+                    const textoAlt = q.alternativas[letra];
+                    if (textoAlt) {
+                        altsHtml += `
+                            <div class="alternative-item" onclick="selectAlternative(${q.id}, '${letra}')" data-question="${q.id}" data-letter="${letra}">
+                                <div class="alternative-badge">${letra}</div>
+                                <div class="alternative-text">${escapeHtml(textoAlt)}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                card.innerHTML = `
+                    <div class="question-header">${headerText}</div>
+                    <div class="question-text">${parseMarkdown(q.enunciated || q.enunciado)}</div>
+                    <div class="alternatives-list">${altsHtml}</div>
+                    <div class="question-actions">
+                        <div class="btn-action-left">
+                            <button id="btn-responder-${q.id}" style="pointer-events: auto !important; opacity: 1 !important;" onclick="checkAnswer(${q.id})">Responder</button>
+                        </div>
+                        <div class="btn-action-right">
+                            <button class="btn-tab" onclick="toggleExplanation(${q.id})">💡 Ver Explicação</button>
+                            <button class="btn-tab" style="border-color:#cbd5e1; color:#1e293b;" onclick="editQuestion(${q.id})">✏️ Editar</button>
+                            <button class="btn-tab" style="border-color:#fee2e2; color:#ef4444;" onclick="deleteQuestion(${q.id})">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                    <div class="explanation-box" id="explanation-${q.id}">
+                        <strong>Gabarito Oficial: ${q.correta || 'A'}</strong><br><br>
+                        ${parseMarkdown(q.comentario || 'Nenhuma explicação detalhada inserida para esta questão.')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (typeof MathJax !== "undefined" && MathJax.typesetPromise) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // --- SISTEMA DE RESOLUÇÃO E SELEÇÃO ---
+        function selectAlternative(qId, letter) {
+            const card = document.getElementById(`card-q-${qId}`);
+            if (card) {
+                // Remove a seleção visual apenas das alternativas na tela
+                card.querySelectorAll('.alternative-item').forEach(el => {
+                    el.classList.remove('selected');
+                });
+            }
+            
+            // CORREÇÃO CRÍTICA: Removida a linha que limpava o histórico global aqui!
+            // O histórico agora fica preservado para o gráfico não computar duas vezes.
+
+            const target = document.querySelector(`[data-question="${qId}"][data-letter="${letter}"]`);
+            if (target) target.classList.add('selected');
+            
+            currentSelections[qId] = letter;
+        }
+
+        function checkAnswer(qId) {
+            const selected = currentSelections[qId];
+            if (!selected) return alert("Por favor, selecione uma alternativa antes de responder!");
+
+            const questao = db.questions.find(q => q.id === qId);
+            if (!questao) return;
+
+            const card = document.getElementById(`card-q-${qId}`);
+            
+            // Inicializa o array de respondidas se não existir
+            if (!db.user.respondidas) db.user.respondidas = [];
+            
+            // Verifica se esta questão JÁ FOI respondida em algum momento no passado
+            const jaRespondidaAntes = db.user.respondidas.includes(qId);
+
+            // Limpa feedbacks visuais da tentativa anterior na tela
+            const msgAntiga = card.querySelector('.feedback-result-msg');
+            if (msgAntiga) msgAntiga.remove();
+
+            card.querySelectorAll('.alternative-item').forEach(el => {
+                el.classList.remove('feedback-correct', 'feedback-wrong');
+            });
+
+            const itemSelecionado = card.querySelector(`[data-letter="${selected}"]`);
+            const itemCorreto = card.querySelector(`[data-letter="${questao.correta || 'A'}"]`);
+
+            const feedbackMsg = document.createElement('div');
+            feedbackMsg.className = "feedback-result-msg";
+            feedbackMsg.style.marginTop = "15px";
+            feedbackMsg.style.padding = "10px";
+            feedbackMsg.style.borderRadius = "4px";
+            feedbackMsg.style.fontWeight = "500";
+            feedbackMsg.style.fontSize = "15px";
+
+            if (selected === (questao.correta || 'A')) {
+                if (itemSelecionado) itemSelecionado.classList.add('feedback-correct');
+                
+                // SÓ SOMA NO DASHBOARD SE FOR A PRIMEIRA TENTATIVA REAL DA HISTÓRIA
+                if (!jaRespondidaAntes) {
+                    db.user.acertos = (db.user.acertos || 0) + 1;
+                }
+                
+                feedbackMsg.style.color = "#16a34a"; // Verde
+                feedbackMsg.innerHTML = "✔ A sua resposta está correta!";
+            } else {
+                if (itemSelecionado) itemSelecionado.classList.add('feedback-wrong');
+                if (itemCorreto) itemCorreto.classList.add('feedback-correct');
+                
+                // SÓ SOMA NO DASHBOARD SE FOR A PRIMEIRA TENTATIVA REAL DA HISTÓRIA
+                if (!jaRespondidaAntes) {
+                    db.user.erros = (db.user.erros || 0) + 1;
+                }
+                
+                feedbackMsg.innerHTML = `
+                    <span style="color: #dc2626;">❌ A resposta está incorreta!</span> 
+                    <span style="color: #16a34a; margin-left: 10px;">--> Resposta Correta:</span> 
+                    <strong style="color: #000000;">${questao.correta || 'A'}</strong>
+                `;
+            }
+
+            const expBox = document.getElementById(`explanation-${qId}`);
+            if (expBox) {
+                expBox.parentNode.insertBefore(feedbackMsg, expBox);
+            }
+
+            // Salva a questão de forma permanente no histórico se for a primeira vez
+            if (!jaRespondidaAntes) {
+                db.user.respondidas.push(qId);
+            }
+
+            saveToStorage();
+            
+            // Se houver uma função de atualizar o gráfico/painel na tela na mesma hora, chamamos ela aqui
+            if (typeof updateDashboardMetrics === "function") {
+                updateDashboardMetrics();
+            }
+        }
+
+        // --- SISTEMA DE RESOLUÇÃO E SELEÇÃO ---
+        function selectAlternative(qId, letter) {
+            // TRAVA REMOVIDA: Agora você pode mudar de alternativa livremente mesmo se já respondeu antes
+            document.querySelectorAll(`[data-question="${qId}"]`).forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            const target = document.querySelector(`[data-question="${qId}"][data-letter="${letter}"]`);
+            if (target) target.classList.add('selected');
+            
+            currentSelections[qId] = letter;
+        }
+
+        function checkAnswer(qId) {
+            const selected = currentSelections[qId];
+            if (!selected) return alert("Por favor, selecione uma alternativa antes de responder!");
+
+            const questao = db.questions.find(q => q.id === qId);
+            if (!questao) return;
+
+            const card = document.getElementById(`card-q-${qId}`);
+            
+            // Inicializa a estrutura do usuário se não existir
+            if (!db.user) db.user = {};
+            if (!db.user.respondidas) db.user.respondidas = [];
+            if (!db.user.historicoRespostas) db.user.historicoRespostas = {};
+
+            // Salva ou atualiza a resposta atual para esta questão específica (Garante apenas UMA resposta por ID)
+            db.user.historicoRespostas[qId] = selected;
+
+            // Insere o ID no array de respondidas se ainda não estiver lá
+            if (!db.user.respondidas.includes(qId)) {
+                db.user.respondidas.push(qId);
+            }
+
+            // --- RECALCULO MATEMÁTICO ÚNICO DO DASHBOARD ---
+            // Em vez de acumular com ++, nós limpamos e contamos do zero com base nas respostas únicas salvas
+            db.user.acertos = 0;
+            db.user.erros = 0;
+
+            db.user.respondidas.forEach(id => {
+                const q = db.questions.find(quest => quest.id === id);
+                if (q) {
+                    const respUsuario = db.user.historicoRespostas[id];
+                    const gabarito = q.correta || 'A';
+                    if (respUsuario === gabarito) {
+                        db.user.acertos++;
+                    } else {
+                        db.user.erros++;
+                    }
+                }
+            });
+
+            // --- ATUALIZAÇÃO VISUAL DO CARD NA TELA ---
+            // Limpa mensagens e marcações anteriores da tela
+            const msgAntiga = card.querySelector('.feedback-result-msg');
+            if (msgAntiga) msgAntiga.remove();
+
+            card.querySelectorAll('.alternative-item').forEach(el => {
+                el.classList.remove('feedback-correct', 'feedback-wrong');
+            });
+
+            const itemSelecionado = card.querySelector(`[data-letter="${selected}"]`);
+            const itemCorreto = card.querySelector(`[data-letter="${questao.correta || 'A'}"]`);
+
+            const feedbackMsg = document.createElement('div');
+            feedbackMsg.className = "feedback-result-msg";
+            feedbackMsg.style.marginTop = "15px";
+            feedbackMsg.style.padding = "10px";
+            feedbackMsg.style.borderRadius = "4px";
+            feedbackMsg.style.fontWeight = "500";
+            feedbackMsg.style.fontSize = "15px";
+
+            if (selected === (questao.correta || 'A')) {
+                if (itemSelecionado) itemSelecionado.classList.add('feedback-correct');
+                feedbackMsg.style.color = "#16a34a"; // Verde
+                feedbackMsg.innerHTML = "✔ A sua resposta está correta!";
+            } else {
+                if (itemSelecionado) itemSelecionado.classList.add('feedback-wrong');
+                if (itemCorreto) itemCorreto.classList.add('feedback-correct');
+                feedbackMsg.innerHTML = `
+                    <span style="color: #dc2626;">❌ A resposta está incorreta!</span> 
+                    <span style="color: #16a34a; margin-left: 10px;">--> Resposta Correta:</span> 
+                    <strong style="color: #000000;">${questao.correta || 'A'}</strong>
+                `;
+            }
+
+            const expBox = document.getElementById(`explanation-${qId}`);
+            if (expBox) {
+                expBox.parentNode.insertBefore(feedbackMsg, expBox);
+            }
+
+            saveToStorage();
+
+            // Força a atualização do gráfico do Dashboard imediatamente na tela
+            if (typeof updateDashboardMetrics === "function") {
+                updateDashboardMetrics();
+            } else if (typeof renderDashboard === "function") {
+                renderDashboard();
+            }
+        }
+
+        function toggleExplanation(qId) {
+            const box = document.getElementById(`explanation-${qId}`);
+            if (box) {
+                box.style.display = (box.style.display === "block") ? "none" : "block";
+            }
+        }
+
+        // --- BUSCA AVULSA POR ID ---
+        function searchQuestions() {
+            const query = document.getElementById('search-query').value.trim();
+            if (!query) {
+                document.getElementById('container-busca-questoes').innerHTML = "";
+                return;
+            }
+            const filtradas = db.questions.filter(q => q.id.toString() === query);
+            renderFilterQuestionsList(filtradas, 'container-busca-questoes');
+        }
+
+        // --- CADASTRO MANUAL / EDIÇÃO ---
+        function saveQuestion(e) {
+            e.preventDefault();
+            const banca = document.getElementById('inp-banca').value.trim();
+            const orgao = document.getElementById('inp-orgao').value.trim();
+            const cargo = document.getElementById('inp-cargo').value.trim();
+            const ano = parseInt(document.getElementById('inp-ano').value) || 2026;
+            const materia = document.getElementById('inp-materia').value.trim();
+            const assunto = document.getElementById('inp-assunto').value.trim();
+            const correta = document.getElementById('inp-correta').value;
+            const comentario = document.getElementById('inp-comentario').value.trim();
+            const enunciado = document.getElementById('inp-enunciado').value.trim();
+
+            const alternativas = {
+                A: document.getElementById('inp-altA').value.trim(),
+                B: document.getElementById('inp-altB').value.trim(),
+                C: document.getElementById('inp-altC').value.trim(),
+                D: document.getElementById('inp-altD').value.trim(),
+                E: document.getElementById('inp-altE').value.trim()
+            };
+
+            if (editingId !== null) {
+                const idx = db.questions.findIndex(q => q.id === editingId);
+                if (idx !== -1) {
+                    db.questions[idx] = { id: editingId, banca, orgao, cargo, ano, materia, assunto, alternativas, correta, comentario, enunciado };
+                }
+                editingId = null;
+                alert("Questão atualizada com sucesso!");
+            } else {
+                const novoId = db.questions.length > 0 ? Math.max(...db.questions.map(q => q.id)) + 1 : 1;
+                db.questions.push({ id: novoId, banca, orgao, cargo, ano, materia, assunto, alternativas, correta, comentario, enunciado });
+                alert("Questão cadastrada com sucesso!");
+            }
+
+            saveToStorage();
+            populateFilterDropdowns();
+            switchView('todas');
+        }
+
+        function editQuestion(qId) {
+            const q = db.questions.find(quest => quest.id === qId);
+            if (!q) return;
+
+            editingId = qId;
+            switchView('enviar', true);
+
+            document.getElementById('btn-submit-questao').textContent = "Atualizar Questão";
+            document.getElementById('inp-banca').value = q.banca || "";
+            document.getElementById('inp-orgao').value = q.orgao || "";
+            document.getElementById('inp-cargo').value = q.cargo || "";
+            document.getElementById('inp-ano').value = q.ano || 2026;
+            document.getElementById('inp-materia').value = q.materia || "";
+            document.getElementById('inp-assunto').value = q.assunto || "";
+            document.getElementById('inp-correta').value = q.correta || "A";
+            document.getElementById('inp-comentario').value = q.comentario || "";
+            document.getElementById('inp-enunciado').value = q.enunciado || "";
+
+            if (q.alternativas) {
+                document.getElementById('inp-altA').value = q.alternativas.A || "";
+                document.getElementById('inp-altB').value = q.alternativas.B || "";
+                document.getElementById('inp-altC').value = q.alternativas.C || "";
+                document.getElementById('inp-altD').value = q.alternativas.D || "";
+                document.getElementById('inp-altE').value = q.alternativas.E || "";
+            }
+        }
+
+        function deleteQuestion(qId) {
+            if (confirm("Tem certeza absoluta que deseja excluir de forma permanente esta questão?")) {
+                db.questions = db.questions.filter(q => q.id !== qId);
+                saveToStorage();
+                populateFilterDropdowns();
+                alert("Questão excluída!");
+                location.reload();
+            }
+        }
+
+        // Armazena as questões extraídas do HTML temporariamente para revisão
+        let questoesTemporariasLote = [];
+
+        function processarHTMLMultiplo() {
+            const htmlBruto = document.getElementById('html-bruto-input').value.trim();
+            if (!htmlBruto) {
+                alert("Por favor, insira o código HTML bruto para realizar o processamento.");
+                return;
+            }
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlBruto, 'text/html');
+            
+            // Busca por qualquer variação de classe dos blocos de questão (incluindo as dinâmicas do React)
+            const qBlocks = doc.querySelectorAll('[class*="cardQuestion"], [class*="QuestionCard"], [class*="question-card"], [id*="card-q-"]');
+            
+            if (qBlocks.length === 0) {
+                alert("Nenhum bloco de questão válido foi detectado estruturalmente nesse HTML. Verifique a origem!");
+                return;
+            }
+
+            questoesTemporariasLote = [];
+            let salteadasPorDuplicacao = 0;
+
+            qBlocks.forEach((block, index) => {
+                let banca = "VUNESP", materia = "Geral", assunto = "Geral", enunciado = "";
+                let orgaoMapeado = "Pref. Santos/SP", cargoMapeado = "Assistente Administrativo", anoMapeado = "2026";
+                let alternativasObj = { A: "", B: "", C: "", D: "", E: "" };
+                let gabarito = "A";
+
+                // 1. Captura Avançada de Metadados do HTML
+                const header = block.querySelector('[class*="header__"]');
+                if (header) {
+                    const text = header.textContent || "";
+                    if (text.includes("Banca:")) banca = text.split("Banca:")[1].split("Orgão:")[0].split("|")[0].trim();
+                    if (text.includes("Orgão:")) orgaoMapeado = text.split("Orgão:")[1].split("Cargo(s):")[0].trim();
+                    if (text.includes("Cargo(s):")) cargoMapeado = text.split("Cargo(s):")[1].split("Ano:")[0].trim();
+                    if (text.includes("Ano:")) anoMapeado = text.split("Ano:")[1].split("Materia/Assunto:")[0].split("Matéria:")[0].trim();
+                    
+                    if (text.includes("Matéria:") || text.includes("Materia/Assunto:")) {
+                        const splitter = text.includes("Materia/Assunto:") ? "Materia/Assunto:" : "Matéria:";
+                        const blocoMateriaAssunto = text.split(splitter)[1].trim();
+                        
+                        // Se houver uma barra ou seta separando Matéria de Assunto, tenta dividir autonomamente
+                        if (blocoMateriaAssunto.includes(">")) {
+                            materia = blocoMateriaAssunto.split(">")[0].trim();
+                            assunto = blocoMateriaAssunto.split(">")[1].trim();
+                        } else if (blocoMateriaAssunto.includes("/")) {
+                            materia = blocoMateriaAssunto.split("/")[0].trim();
+                            assunto = blocoMateriaAssunto.split("/")[1].trim();
+                        } else {
+                            materia = blocoMateriaAssunto;
+                            assunto = "Geral";
+                        }
+                    }
+                }
+
+                // 2. Captura do Enunciado
+                const txtEl = block.querySelector('[class*="chamada__"], [class*="question-text"]');
+                if (txtEl) {
+                    enunciado = txtEl.innerHTML.trim();
+                } else {
+                    const bodyEl = block.querySelector('[class*="body__"]');
+                    if (bodyEl) enunciado = bodyEl.firstElementChild?.innerHTML.trim() || "";
+                }
+
+                if (!enunciado) return;
+
+                // Filtro contra duplicados
+                const jaExisteNoBanco = db.questions.some(q => q.enunciado === enunciado || q.enunciated === enunciado);
+                if (jaExisteNoBanco) {
+                    salteadasPorDuplicacao++;
+                    return; 
+                }
+
+                // 3. Captura das Alternativas
+                const itemsAlt = block.querySelectorAll('[class*="alternativa__"]');
+                const letrasOrdem = ["A", "B", "C", "D", "E"];
+                let indexLetra = 0;
+
+                itemsAlt.forEach(item => {
+                    const textEl = item.querySelector('[class*="alternativaTexto__"]');
+                    if (textEl && indexLetra < letrasOrdem.length) {
+                        const letraAtual = letrasOrdem[indexLetra];
+                        alternativasObj[letraAtual] = textEl.textContent.replace(/^\s*[A-Ea-e]\s*[\.\-\)]\s*/, '').trim();
+                        indexLetra++;
+                    }
+                });
+
+                // 4. Captura do Gabarito
+                const expBox = block.querySelector('[class*="explanation-box"], [class*="footer__"]');
+                if (expBox) {
+                    const match = expBox.textContent.match(/Gabarito Oficial:\s*([A-E])/i);
+                    if (match && match[1]) gabarito = match[1].toUpperCase();
+                }
+
+                // GARANTIA: Objeto nasce com todas as propriedades mapeadas explicitamente
+                questoesTemporariasLote.push({
+                    tempId: index + 1,
+                    banca: banca,
+                    orgao: orgaoMapeado,
+                    cargo: cargoMapeado,
+                    ano: anoMapeado,
+                    materia: materia,
+                    assunto: assunto,
+                    enunciado: enunciado,
+                    alternativas: alternativasObj,
+                    correta: gabarito,
+                    comentario: ""
+                });
+            });
+
+            if (questoesTemporariasLote.length === 0 && salteadasPorDuplicacao > 0) {
+                alert(`Aviso: Todas as ${salteadasPorDuplicacao} questões detectadas já estão cadastradas no seu Banco de Dados.`);
+                return;
+            }
+
+            if (salteadasPorDuplicacao > 0) {
+                alert(`Filtro de segurança: ${salteadasPorDuplicacao} questões foram ignoradas pois já existiam. ${questoesTemporariasLote.length} novas abertas para revisão.`);
+            }
+
+            renderizarEditorEmMassaHTML();
+        }
+
+        function renderizarEditorEmMassaHTML() {
+            let container = document.getElementById('bulk-editor-container');
+            if (!container) {
+                const bulkArea = document.getElementById('html-bruto-input');
+                container = document.createElement('div');
+                container.id = 'bulk-editor-container';
+                bulkArea.parentNode.insertBefore(container, bulkArea.nextSibling);
+            }
+
+            container.innerHTML = `
+                <h2 style="color: #1e293b; margin-top: 30px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">📋 Revisão de Questões do HTML (${questoesTemporariasLote.length})</h2>
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Ajuste os dados e defina o Gabarito Oficial de cada questão capturada antes de consolidar no banco final.</p>
+            `;
+
+            questoesTemporariasLote.forEach((q) => {
+                const editCard = document.createElement('div');
+                editCard.className = "stat-card"; 
+                editCard.style.border = "1px solid #cbd5e1";
+                editCard.style.marginBottom = "25px";
+                editCard.style.padding = "20px";
+                editCard.style.backgroundColor = "#ffffff";
+
+                editCard.innerHTML = `
+                    <div style="background: #e0f2fe; padding: 6px 12px; font-weight: bold; margin-bottom: 15px; color: #0369a1; border-radius: 4px; display: flex; justify-content: space-between;">
+                        <span>Questão Capturada N° ${q.tempId}</span>
+                        <span style="font-size: 12px; color: #64748b; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${q.banca} | ${q.materia}</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Enunciado da Questão</label>
+                        <textarea id="lote-enunciado-${q.tempId}" style="width:100%; min-height:80px; padding: 8px; border-radius:4px; border:1px solid #cbd5e1;">${q.enunciado}</textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div class="form-group"><label>Alternativa A</label><input type="text" id="lote-altA-${q.tempId}" value="${q.alternativas.A}" style="width:100%; padding:6px; border: 1px solid #cbd5e1; border-radius:4px;"></div>
+                        <div class="form-group"><label>Alternativa B</label><input type="text" id="lote-altB-${q.tempId}" value="${q.alternativas.B}" style="width:100%; padding:6px; border: 1px solid #cbd5e1; border-radius:4px;"></div>
+                        <div class="form-group"><label>Alternativa C</label><input type="text" id="lote-altC-${q.tempId}" value="${q.alternativas.C}" style="width:100%; padding:6px; border: 1px solid #cbd5e1; border-radius:4px;"></div>
+                        <div class="form-group"><label>Alternativa D</label><input type="text" id="lote-altD-${q.tempId}" value="${q.alternativas.D}" style="width:100%; padding:6px; border: 1px solid #cbd5e1; border-radius:4px;"></div>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label>Alternativa E (Se houver)</label>
+                        <input type="text" id="lote-altE-${q.tempId}" value="${q.alternativas.E}" style="width:100%; padding:6px; border: 1px solid #cbd5e1; border-radius:4px;">
+                    </div>
+
+                    <div style="display: flex; gap: 20px; margin-top: 20px; background: #fff7ed; padding: 15px; border-radius: 6px; border: 1px solid #ffedd5;">
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label style="color: #ea580c; font-weight: bold;">⭐ GABARITO CORRETO</label>
+                            <select id="lote-correta-${q.tempId}" style="width: 100%; padding: 8px; font-weight: bold; border: 1px solid #ea580c; border-radius: 4px; background: white; height: 38px;">
+                                <option value="A" ${q.correta === 'A' ? 'selected' : ''}>Alternativa A</option>
+                                <option value="B" ${q.correta === 'B' ? 'selected' : ''}>Alternativa B</option>
+                                <option value="C" ${q.correta === 'C' ? 'selected' : ''}>Alternativa C</option>
+                                <option value="D" ${q.correta === 'D' ? 'selected' : ''}>Alternativa D</option>
+                                <option value="E" ${q.correta === 'E' ? 'selected' : ''}>Alternativa E</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                            <label style="color: #475569;">Explicação / Comentário (Opcional)</label>
+                            <textarea id="lote-comentario-${q.tempId}" placeholder="Escreva um comentário ou fundamentação..." style="width:100%; height:38px; padding: 6px; border-radius:4px; border:1px solid #cbd5e1;"></textarea>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(editCard);
+            });
+
+            const btnSalvarTudo = document.createElement('div');
+            btnSalvarTudo.style.textAlign = "right";
+            btnSalvarTudo.style.marginTop = "30px";
+            btnSalvarTudo.innerHTML = `
+                <button class="btn-submit" style="background-color: #10b981; padding: 12px 35px; font-size: 16px; font-weight: bold; width: fit-content;" onclick="salvarTodasQuestoesRevisadas()">
+                    💾 Confirmar e Salvar Todas no Banco de Dados
+                </button>
+            `;
+            container.appendChild(btnSalvarTudo);
+        }
+
+        function salvarTodasQuestoesRevisadas() {
+            if (questoesTemporariasLote.length === 0) return alert("Nenhuma questão na fila para gravação.");
+
+            let proximoId = db.questions.length > 0 ? Math.max(...db.questions.map(q => q.id)) + 1 : 1;
+            let salvasComSucesso = 0;
+
+            for (let q of questoesTemporariasLote) {
+                // CORREÇÃO: Captura os valores EXATOS que você digitou na tela de edição
+                const bancaEditada = document.getElementById(`lote-banca-${q.tempId}`).value.trim();
+                const orgaoEditado = document.getElementById(`lote-orgao-${q.tempId}`).value.trim();
+                const cargoEditado = document.getElementById(`lote-cargo-${q.tempId}`).value.trim();
+                const anoEditado = document.getElementById(`lote-ano-${q.tempId}`).value.trim();
+                const materiaEditada = document.getElementById(`lote-materia-${q.tempId}`).value.trim();
+                const assuntoEditado = document.getElementById(`lote-assunto-${q.tempId}`).value.trim();
+                
+                const enunciadoEditado = document.getElementById(`lote-enunciado-${q.tempId}`).value.trim();
+                const altA = document.getElementById(`lote-altA-${q.tempId}`).value.trim();
+                const altB = document.getElementById(`lote-altB-${q.tempId}`).value.trim();
+                const altC = document.getElementById(`lote-altC-${q.tempId}`).value.trim();
+                const altD = document.getElementById(`lote-altD-${q.tempId}`).value.trim();
+                const altE = document.getElementById(`lote-altE-${q.tempId}`).value.trim();
+                const correta = document.getElementById(`lote-correta-${q.tempId}`).value;
+                const comentario = document.getElementById(`lote-comentario-${q.tempId}`).value.trim();
+
+                if (!enunciadoEditado) {
+                    alert(`Atenção: O enunciado da questão temporária N° ${q.tempId} está vazio.`);
+                    return;
+                }
+
+                // CORREÇÃO: Passando as variáveis editadas para o banco de dados final
+                db.questions.push({
+                    id: proximoId,
+                    banca: bancaEditada,
+                    orgao: orgaoEditado,
+                    cargo: cargoEditado,
+                    ano: anoEditado,
+                    materia: materiaEditada,
+                    assunto: assuntoEditado,
+                    enunciado: enunciadoEditado,
+                    alternativas: { A: altA, B: altB, C: altC, D: altD, E: altE },
+                    correta: correta,
+                    comentario: comentario
+                });
+
+                proximoId++;
+                salvasComSucesso++;
+            }
+
+            // Salva fisicamente no LocalStorage
+            saveToStorage();
+            if (typeof populateFilterDropdowns === "function") populateFilterDropdowns();
+
+            // Limpa a área de processamento
+            document.getElementById('bulk-editor-container').innerHTML = "";
+            document.getElementById('html-bruto-input').value = "";
+
+            const feedback = document.getElementById('feedback-container');
+            if (feedback) {
+                feedback.style.display = "block";
+                feedback.style.backgroundColor = "#dcfce7";
+                feedback.style.color = "#15803d";
+                feedback.innerHTML = `<strong>Sucesso absoluto!</strong> Foram salvas <strong>${salvasComSucesso} questões</strong> revisadas com sucesso.`;
+            }
+
+            alert(`Excelente! ${salvasComSucesso} questões foram integradas ao banco.`);
+            questoesTemporariasLote = [];
+            
+            // Atualiza a listagem visual geral abaixo
+            if (typeof renderFilterQuestionsList === "function") {
+                renderFilterQuestionsList(db.questions, 'questions-list-container'); 
+            } else if (typeof renderQuestionsList === "function") {
+                renderQuestionsList();
+            }
+        }
+
+        function renderizarEditorEmMassaHTML() {
+            let container = document.getElementById('bulk-editor-container');
+            if (!container) {
+                const bulkArea = document.getElementById('html-bruto-input');
+                container = document.createElement('div');
+                container.id = 'bulk-editor-container';
+                bulkArea.parentNode.insertBefore(container, bulkArea.nextSibling);
+            }
+
+            container.innerHTML = `
+                <h2 style="color: #1e293b; margin-top: 30px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">📋 Revisão de Questões do HTML (${questoesTemporariasLote.length})</h2>
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Ajuste os dados, classifique os metadados e defina o Gabarito Oficial de cada questão capturada antes de consolidar no banco final.</p>
+            `;
+
+            questoesTemporariasLote.forEach((q) => {
+                const editCard = document.createElement('div');
+                editCard.className = "stat-card"; 
+                editCard.style.border = "1px solid #cbd5e1";
+                editCard.style.marginBottom = "35px";
+                editCard.style.padding = "25px";
+                editCard.style.backgroundColor = "#ffffff";
+                editCard.style.borderRadius = "8px";
+                editCard.style.boxShadow = "0 2px 4px rgba(0,0,0,0.05)";
+
+                editCard.innerHTML = `
+                    <div style="background: #e0f2fe; padding: 8px 15px; font-weight: bold; margin-bottom: 20px; color: #0369a1; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>QUESTÃO CAPTURADA N° ${q.tempId}</span>
+                        <span style="font-size: 12px; color: #64748b;">ID Original Detectado: ${q.banca !== 'Mapeada' ? 'Mapeamento OK' : 'Sem metadados'}</span>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight: 600; font-size: 13px;">Banca Examinadora</label>
+                            <input type="text" id="lote-banca-${q.tempId}" value="${q.banca}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight: 600; font-size: 13px;">Órgão</label>
+                            <input type="text" id="lote-orgao-${q.tempId}" value="${q.orgao || 'Pref. Santos/SP'}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight: 600; font-size: 13px;">Cargo(s)</label>
+                            <input type="text" id="lote-cargo-${q.tempId}" value="${q.cargo || 'Assistente Administrativo'}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; margin-top: 5px;">
+                            <label style="font-weight: 600; font-size: 13px;">Ano</label>
+                            <input type="text" id="lote-ano-${q.tempId}" value="${q.ano || '2021'}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; margin-top: 5px;">
+                            <label style="font-weight: 600; font-size: 13px;">Matéria</label>
+                            <input type="text" id="lote-materia-${q.tempId}" value="${q.materia}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; margin-top: 5px;">
+                            <label style="font-weight: 600; font-size: 13px;">Assunto</label>
+                            <input type="text" id="lote-assunto-${q.tempId}" value="${q.assunto}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="font-weight: 600;">Enunciado da Questão</label>
+                        <textarea id="lote-enunciado-${q.tempId}" style="width:100%; min-height:90px; padding: 10px; border-radius:4px; border:1px solid #cbd5e1; font-family: inherit; box-sizing: border-box;">${q.enunciado}</textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group" style="margin-bottom:0;"><label style="font-weight: 600;">Alternativa A</label><input type="text" id="lote-altA-${q.tempId}" value="${q.alternativas.A}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label style="font-weight: 600;">Alternativa B</label><input type="text" id="lote-altB-${q.tempId}" value="${q.alternativas.B}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label style="font-weight: 600;">Alternativa C</label><input type="text" id="lote-altC-${q.tempId}" value="${q.alternativas.C}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label style="font-weight: 600;">Alternativa D</label><input type="text" id="lote-altD-${q.tempId}" value="${q.alternativas.D}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;"></div>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label style="font-weight: 600;">Alternativa E (Se houver)</label>
+                        <input type="text" id="lote-altE-${q.tempId}" value="${q.alternativas.E}" style="width:100%; padding:8px; border: 1px solid #cbd5e1; border-radius:4px; box-sizing: border-box;">
+                    </div>
+
+                    <div style="display: flex; gap: 20px; margin-top: 20px; background: #fff7ed; padding: 15px; border-radius: 6px; border: 1px solid #ffedd5;">
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label style="color: #ea580c; font-weight: bold;">⭐ GABARITO CORRETO</label>
+                            <select id="lote-correta-${q.tempId}" style="width: 100%; padding: 8px; font-weight: bold; border: 1px solid #ea580c; border-radius: 4px; background: white; height: 40px;">
+                                <option value="A" ${q.correta === 'A' ? 'selected' : ''}>Alternativa A</option>
+                                <option value="B" ${q.correta === 'B' ? 'selected' : ''}>Alternativa B</option>
+                                <option value="C" ${q.correta === 'C' ? 'selected' : ''}>Alternativa C</option>
+                                <option value="D" ${q.correta === 'D' ? 'selected' : ''}>Alternativa D</option>
+                                <option value="E" ${q.correta === 'E' ? 'selected' : ''}>Alternativa E</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                            <label style="color: #475569; font-weight: 600;">Explicação / Comentário (Opcional)</label>
+                            <textarea id="lote-comentario-${q.tempId}" placeholder="Escreva um comentário ou fundamentação jurídica/administrativa..." style="width:100%; height:40px; padding: 8px; border-radius:4px; border:1px solid #cbd5e1; box-sizing: border-box; font-family: inherit;"></textarea>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(editCard);
+            });
+
+            const btnSalvarTudo = document.createElement('div');
+            btnSalvarTudo.style.textAlign = "right";
+            btnSalvarTudo.style.marginTop = "30px";
+            btnSalvarTudo.innerHTML = `
+                <button class="btn-submit" style="background-color: #10b981; padding: 12px 35px; font-size: 16px; font-weight: bold; width: fit-content; cursor: pointer; border: none; border-radius: 6px; color: white;" onclick="salvarTodasQuestoesRevisadas()">
+                    💾 Confirmar e Salvar Todas no Banco de Dados
+                </button>
+            `;
+            container.appendChild(btnSalvarTudo);
+        }
+
+    function salvarTodasQuestoesRevisadas() {
+            if (questoesTemporariasLote.length === 0) return alert("Nenhuma questão na fila para gravação.");
+
+            let proximoId = db.questions.length > 0 ? Math.max(...db.questions.map(q => q.id)) + 1 : 1;
+            let salvasComSucesso = 0;
+
+            for (let q of questoesTemporariasLote) {
+                // Captura os elementos da tela de forma segura
+                const elBanca = document.getElementById(`lote-banca-${q.tempId}`);
+                const elOrgao = document.getElementById(`lote-orgao-${q.tempId}`);
+                const elCargo = document.getElementById(`lote-cargo-${q.tempId}`);
+                const elAno = document.getElementById(`lote-ano-${q.tempId}`);
+                const elMateria = document.getElementById(`lote-materia-${q.tempId}`);
+                const elAssunto = document.getElementById(`lote-assunto-${q.tempId}`);
+                
+                const elEnunciado = document.getElementById(`lote-enunciado-${q.tempId}`);
+                const elAltA = document.getElementById(`lote-altA-${q.tempId}`);
+                const elAltB = document.getElementById(`lote-altB-${q.tempId}`);
+                const elAltC = document.getElementById(`lote-altC-${q.tempId}`);
+                const elAltD = document.getElementById(`lote-altD-${q.tempId}`);
+                const elAltE = document.getElementById(`lote-altE-${q.tempId}`);
+                const elCorreta = document.getElementById(`lote-correta-${q.tempId}`);
+                const elComentario = document.getElementById(`lote-comentario-${q.tempId}`);
+
+                // Validação para garantir que os inputs de fato existem na tela
+                if (!elMateria || !elAssunto || !elEnunciado) {
+                    console.error("Erro crítico: Alguns campos do formulário de lote não foram encontrados no HTML.");
+                    alert("Erro interno ao ler os campos da tela. Verifique o console (F12).");
+                    return;
+                }
+
+                const bancaEditada = elBanca.value.trim();
+                const orgaoEditado = elOrgao.value.trim();
+                const cargoEditado = elCargo.value.trim();
+                const anoEditado = elAno.value.trim();
+                const materiaEditada = elMateria.value.trim();
+                const assuntoEditado = elAssunto.value.trim();
+                const enunciadoEditado = elEnunciado.value.trim();
+                
+                const altA = elAltA.value.trim();
+                const altB = elAltB.value.trim();
+                const altC = elAltC.value.trim();
+                const altD = elAltD.value.trim();
+                const altE = elAltE.value.trim();
+                const correta = elCorreta.value;
+                const comentario = elComentario.value.trim();
+
+                if (!enunciadoEditado) {
+                    alert(`Atenção: O enunciado da questão temporária N° ${q.tempId} está vazio.`);
+                    return;
+                }
+
+                // Log para você inspecionar no F12 se o JavaScript está lendo certo antes de salvar
+                console.log(`Salvando Questão ${q.tempId}:`, { materiaEditada, assuntoEditado });
+
+                // Grava no banco local exatamente o que foi capturado dos inputs
+                db.questions.push({
+                    id: proximoId,
+                    banca: bancaEditada,
+                    orgao: orgaoEditado,
+                    cargo: cargoEditado,
+                    ano: anoEditado,
+                    materia: materiaEditada,
+                    assunto: assuntoEditado,
+                    enunciado: enunciadoEditado,
+                    alternativas: { A: altA, B: altB, C: altC, D: altD, E: altE },
+                    correta: correta,
+                    comentario: comentario
+                });
+
+                proximoId++;
+                salvasComSucesso++;
+            }
+
+            // Grava no LocalStorage do navegador
+            saveToStorage();
+            if (typeof populateFilterDropdowns === "function") populateFilterDropdowns();
+
+            // Limpa o painel de lote
+            document.getElementById('bulk-editor-container').innerHTML = "";
+            document.getElementById('html-bruto-input').value = "";
+
+            const feedback = document.getElementById('feedback-container');
+            if (feedback) {
+                feedback.style.display = "block";
+                feedback.style.backgroundColor = "#dcfce7";
+                feedback.style.color = "#15803d";
+                feedback.innerHTML = `<strong>Sucesso absoluto!</strong> Foram salvas <strong>${salvasComSucesso} questões</strong> revisadas com sucesso.`;
+            }
+
+            alert(`Excelente! ${salvasComSucesso} questões foram integradas ao banco.`);
+            questoesTemporariasLote = [];
+            
+            if (typeof renderFilterQuestionsList === "function") {
+                renderFilterQuestionsList(db.questions, 'questions-list-container'); 
+            } else if (typeof renderQuestionsList === "function") {
+                renderQuestionsList();
+            }
+        }    
+
+        function switchView(viewName) {
+    // 1. Oculta todas as telas/seções que possuem a classe "view-section"
+    const sections = document.querySelectorAll('.view-section, [id$="-section"], [id^="view-"]');
+    sections.forEach(section => {
+        section.style.display = 'none';
+    });
+
+    // 2. Localiza a tela alvo baseado nos IDs mais comuns que você deve estar usando
+    let targetSection = document.getElementById(viewName) || 
+                        document.getElementById(`${viewName}-section`) || 
+                        document.getElementById(`view-${viewName}`);
+
+    // 3. Exibe a tela selecionada
+    if (targetSection) {
+        targetSection.style.display = 'block';
+    } else {
+        console.warn(`A tela "${viewName}" não foi encontrada no HTML. Verifique os IDs das suas seções.`);
+    }
+
+    // 4. Remove a classe "active" dos itens do menu lateral e adiciona no atual
+    const menuItems = document.querySelectorAll('.sidebar li, .nav-item');
+    menuItems.forEach(item => {
+        item.classList.remove('active');
+        // Se o clique veio de um menu que passa o nome da view, marca ele como ativo
+        if (item.getAttribute('onclick')?.includes(viewName)) {
+            item.classList.add('active');
+        }
+    });
+}
+
+        function salvarTodasQuestoesRevisadas() {
+            if (questoesTemporariasLote.length === 0) return alert("Nenhuma questão na fila para gravação.");
+
+            let proximoId = db.questions.length > 0 ? Math.max(...db.questions.map(q => q.id)) + 1 : 1;
+            let salvasComSucesso = 0;
+
+            for (let q of questoesTemporariasLote) {
+                const enunciadoEditado = document.getElementById(`lote-enunciado-${q.tempId}`).value.trim();
+                const altA = document.getElementById(`lote-altA-${q.tempId}`).value.trim();
+                const altB = document.getElementById(`lote-altB-${q.tempId}`).value.trim();
+                const altC = document.getElementById(`lote-altC-${q.tempId}`).value.trim();
+                const altD = document.getElementById(`lote-altD-${q.tempId}`).value.trim();
+                const altE = document.getElementById(`lote-altE-${q.tempId}`).value.trim();
+                const correta = document.getElementById(`lote-correta-${q.tempId}`).value;
+                const comentario = document.getElementById(`lote-comentario-${q.tempId}`).value.trim();
+
+                if (!enunciadoEditado) {
+                    alert(`Atenção: O enunciado da questão temporária N° ${q.tempId} está vazio e não pode ser salvo.`);
+                    return;
+                }
+
+                // Adiciona o item estruturado definitivo ao array principal
+                db.questions.push({
+                    id: proximoId,
+                    banca: q.banca,
+                    materia: q.materia,
+                    assunto: q.assunto,
+                    enunciado: enunciadoEditado,
+                    alternativas: {
+                        A: altA,
+                        B: altB,
+                        C: altC,
+                        D: altD,
+                        E: altE
+                    },
+                    correta: correta,
+                    comentario: comentario
+                });
+
+                proximoId++;
+                salvasComSucesso++;
+            }
+
+            // Grava alterações e sincroniza dropdowns da tela do simulador
+            saveToStorage();
+            populateFilterDropdowns();
+
+            // Limpa o painel de edição em massa e o campo de texto bruto
+            document.getElementById('bulk-editor-container').innerHTML = "";
+            document.getElementById('html-bruto-input').value = "";
+
+            // Atualiza a mensagem de feedback nativa do seu layout
+            const feedback = document.getElementById('feedback-container');
+            if (feedback) {
+                feedback.style.display = "block";
+                feedback.style.backgroundColor = "#dcfce7";
+                feedback.style.color = "#15803d";
+                feedback.innerHTML = `<strong>Sucesso absoluto!</strong> Foram consolidadas e salvas <strong>${salvasComSucesso} questões</strong> revisadas com sucesso no banco principal.`;
+            }
+
+            alert(`Excelente! ${salvasComSucesso} questões foram revisadas e salvas em definitivo.`);
+            
+            questoesTemporariasLote = [];
+            if (typeof renderFilterQuestionsList === "function") {
+                renderFilterQuestionsList(db.questions, 'questions-list-container'); 
+            }
+        }
+
+        // --- EXPORTAÇÃO, IMPORTAÇÃO E RESET ---
+        function exportDatabase() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `mapa_questoes_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerImport() {
+            document.getElementById('import-file').click();
+        }
+
+        function importDatabase(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.questions) {
+                        db = imported;
+                        saveToStorage();
+                        alert("Banco de dados restaurado perfeitamente!");
+                        location.reload();
+                    } else {
+                        alert("Arquivo JSON inválido.");
+                    }
+                } catch(err) {
+                    alert("Erro ao ler o backup.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetHistory() {
+            if (confirm("Deseja zerar todo o seu histórico de erros, acertos e questões respondidas deste perfil? (As questões cadastradas não serão deletadas)")) {
+                db.user.acertos = 0;
+                db.user.erros = 0;
+                db.user.respondidas = [];
+                saveToStorage();
+                alert("Histórico zerado!");
+                location.reload();
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+</html>
